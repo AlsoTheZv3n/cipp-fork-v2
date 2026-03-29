@@ -1,13 +1,27 @@
-![CyberDrain Light](github_assets/img/CIPP.png#gh-dark-mode-only)
-![CyberDrain Dark](github_assets/img/CIPP-Light.png#gh-light-mode-only)
+# CIPP Fork v2
 
-# What is this?
+> Experimenteller Fork von [KelvinTegelaar/CIPP](https://github.com/KelvinTegelaar/CIPP) mit einem komplett neuen FastAPI-Backend als Ersatz fuer die PowerShell Azure Functions.
 
-The CyberDrain Improved Partner Portal is a portal to help manage administration for Microsoft Partners. The current Microsoft partner landscape makes it fairly hard to manage multi tenant situations, with loads of manual work. Microsoft Lighthouse might resolve this in the future but development of this is lagging far behind development of the current market for Microsoft Partners.  
-This project is a way to help you with administration, with user management, and deploying your own preferred standards. It's not a replacement for security tools, or a way to cut costs on specific subscriptions. The tool should assist you in removing the gripes with standard partner management and save you several hours per engineer per month.  
-For more information, we recommend checking out our website [here](https://cipp.app)  
-For detailed documentation about features of CIPP, please check out our [documentation.](https://docs.cipp.app)
+## Hinweis
 
-# Our sponsors
+Dieses Projekt basiert auf dem grossartigen [CIPP (CyberDrain Improved Partner Portal)](https://github.com/KelvinTegelaar/CIPP) von **Kelvin Tegelaar** und der CIPP-Community. Alle Credits fuer das originale Frontend und die Idee dahinter gehoeren dem urspruenglichen Projekt.
 
-You can find our sponsors [here.](https://docs.cipp.app/#our-sponsors)
+Ich habe diesen Fork **rein aus Lerngruenden und Interesse** erstellt — keine kommerziellen Absichten, kein Unternehmen dahinter. Das einzige Ziel ist es, das Problem mit den langsamen PowerShell-Modul-Downloads beim Backend-Start zu loesen und dabei moderne Technologien zu lernen.
+
+**Was hier anders ist:**
+- Backend: FastAPI (Python) statt PowerShell Azure Functions
+- Datenbank: PostgreSQL statt Azure Table Storage
+- Graph API: Direkte async HTTP Calls statt serielle PS-Cmdlets
+- Exchange: Isolierter PS-Runner Container (Module nur einmal beim Build geladen)
+- Auth: MSAL OAuth2 mit JWT Sessions statt Azure Static Web Apps
+
+## Original-Projekt
+
+- **CIPP Frontend**: [KelvinTegelaar/CIPP](https://github.com/KelvinTegelaar/CIPP)
+- **CIPP Backend (Original)**: [KelvinTegelaar/CIPP-API](https://github.com/KelvinTegelaar/CIPP-API)
+- **Dokumentation**: [docs.cipp.app](https://docs.cipp.app)
+- **Website**: [cipp.app](https://cipp.app)
+
+## Lizenz
+
+Dieses Projekt steht unter der gleichen [AGPL-3.0 Lizenz](LICENSE.md) wie das Original.
