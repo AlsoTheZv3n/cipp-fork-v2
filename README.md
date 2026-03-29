@@ -313,7 +313,7 @@ Die AI nutzt `list_tenants` → `run_standards_check("contoso.onmicrosoft.com")`
 
 ```env
 # Datenbank
-DATABASE_URL=postgresql+asyncpg://cipp:cipp_dev@localhost:5433/cipp
+DATABASE_URL=postgresql+asyncpg://cipp:changeme@localhost:5433/cipp
 
 # Azure AD / GDAP (fuer Graph API Calls zu Kunden-Tenants)
 AZURE_TENANT_ID=your-partner-tenant-id

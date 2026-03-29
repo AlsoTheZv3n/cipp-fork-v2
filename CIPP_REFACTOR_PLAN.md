@@ -241,7 +241,7 @@ services:
     environment:
       POSTGRES_DB: cipp
       POSTGRES_USER: cipp
-      POSTGRES_PASSWORD: cipp_dev
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -252,7 +252,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql+asyncpg://cipp:cipp_dev@db:5432/cipp
+      DATABASE_URL: postgresql+asyncpg://cipp:${DB_PASSWORD}@db:5432/cipp
       AZURE_TENANT_ID: ${AZURE_TENANT_ID}
       AZURE_CLIENT_ID: ${AZURE_CLIENT_ID}
       AZURE_CLIENT_SECRET: ${AZURE_CLIENT_SECRET}

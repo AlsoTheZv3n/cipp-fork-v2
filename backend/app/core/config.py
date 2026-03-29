@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # Database
-    database_url: str = "postgresql+asyncpg://cipp:cipp_dev@localhost:5433/cipp"
+    database_url: str = "postgresql+asyncpg://cipp:changeme@localhost:5433/cipp"
 
     # Azure AD — Partner Tenant (for GDAP Graph API calls)
     azure_tenant_id: str = ""

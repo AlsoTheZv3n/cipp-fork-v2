@@ -6,7 +6,7 @@
       "cwd": "backend",
       "env": {
         "PYTHONPATH": ".",
-        "DATABASE_URL": "postgresql+asyncpg://cipp:cipp_dev@localhost:5433/cipp"
+        "DATABASE_URL": "postgresql+asyncpg://cipp:changeme@localhost:5433/cipp"
       }
     }
   }

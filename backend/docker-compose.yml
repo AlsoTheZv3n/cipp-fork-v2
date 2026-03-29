@@ -4,7 +4,7 @@ services:
     environment:
       POSTGRES_DB: cipp
       POSTGRES_USER: cipp
-      POSTGRES_PASSWORD: cipp_dev
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
     ports:
       - "5433:5432"
     volumes:
@@ -22,7 +22,7 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: postgresql+asyncpg://cipp:cipp_dev@db:5432/cipp
+      DATABASE_URL: postgresql+asyncpg://cipp:${DB_PASSWORD:-changeme}@db:5432/cipp
       PS_RUNNER_URL: http://ps-runner:8001
       FRONTEND_URL: http://localhost:3000
       CORS_ORIGINS: '["http://localhost:3000"]'

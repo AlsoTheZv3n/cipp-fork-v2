@@ -244,7 +244,7 @@ async def add_shared_mailbox(body: dict):
         "displayName": name,
         "mailNickname": email.split("@")[0],
         "userPrincipalName": email,
-        "passwordProfile": {"forceChangePasswordNextSignIn": True, "password": "TempP@ss123!"},
+        "passwordProfile": {"forceChangePasswordNextSignIn": True, "password": __import__('secrets').token_urlsafe(16) + "!1"},
         "accountEnabled": False,
     })
     return {"Results": f"Shared mailbox {email} created. Convert via PS-Runner."}

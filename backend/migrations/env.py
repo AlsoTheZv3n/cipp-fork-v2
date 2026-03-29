@@ -17,7 +17,7 @@ from app.models.template import CippLog, CippScheduledItem, CippTemplate  # noqa
 config = context.config
 
 # Convert async URL to sync for Alembic migrations
-async_url = os.getenv("DATABASE_URL", "postgresql+asyncpg://cipp:cipp_dev@localhost:5433/cipp")
+async_url = os.getenv("DATABASE_URL", "postgresql+asyncpg://cipp:changeme@localhost:5433/cipp")
 sync_url = async_url.replace("postgresql+asyncpg", "postgresql+psycopg")
 config.set_main_option("sqlalchemy.url", sync_url)
 
