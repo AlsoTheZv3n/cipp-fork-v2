@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "cipp": {
+      "command": "python",
+      "args": ["mcp_server.py"],
+      "cwd": "backend",
+      "env": {
+        "PYTHONPATH": ".",
+        "DATABASE_URL": "postgresql+asyncpg://cipp:cipp_dev@localhost:5433/cipp"
+      }
+    }
+  }
+}

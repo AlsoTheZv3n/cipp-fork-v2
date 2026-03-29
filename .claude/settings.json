@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "cipp": {
+      "command": "python",
+      "args": ["mcp_server.py"],
+      "cwd": "backend",
+      "env": {
+        "PYTHONPATH": "."
+      }
+    }
+  }
+}
