@@ -1,0 +1,54 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: cipp
+      POSTGRES_USER: cipp
+      POSTGRES_PASSWORD: cipp_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cipp"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    ports:
+      - "8055:8000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://cipp:cipp_dev@db:5432/cipp
+      PS_RUNNER_URL: http://ps-runner:8001
+      FRONTEND_URL: http://localhost:3000
+      CORS_ORIGINS: '["http://localhost:3000"]'
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+
+  ps-runner:
+    build: ./ps_runner
+    ports:
+      - "8001:8001"
+    environment:
+      AZURE_CLIENT_ID: ${AZURE_CLIENT_ID}
+      AZURE_CLIENT_SECRET: ${AZURE_CLIENT_SECRET}
+      AZURE_CERT_THUMBPRINT: ${AZURE_CERT_THUMBPRINT:-}
+    healthcheck:
+      test: ["CMD", "pwsh", "-Command", "try { (Invoke-WebRequest -Uri 'http://localhost:8001/health' -UseBasicParsing).StatusCode -eq 200 } catch { exit 1 }"]
+      interval: 30s
+      timeout: 10s
+      start_period: 15s
+      retries: 3
+
+volumes:
+  pgdata:
