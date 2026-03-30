@@ -14,7 +14,7 @@ router = APIRouter(prefix="/api", tags=["sam-partner"])
 
 async def _list_templates(template_type: str, db: AsyncSession):
     result = await db.execute(select(CippTemplate).where(CippTemplate.type == template_type))
-    return [{"id": str(t.id), "name": t.name, "description": t.description, "data": t.data} for t in result.scalars().all()]
+    return {"Results": [{"id": str(t.id), "name": t.name, "description": t.description, "data": t.data} for t in result.scalars().all()]}
 
 async def _add_template(template_type: str, body: dict, db: AsyncSession):
     t = CippTemplate(type=template_type, name=body.get("name", "Unnamed"), description=body.get("description", ""), data=body.get("data", body))

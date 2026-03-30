@@ -68,6 +68,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/version.json")
+async def version_json():
+    return {"version": "1.0.0"}
+
 # Auth routes (/.auth/*, /api/me)
 app.include_router(auth.router)
 

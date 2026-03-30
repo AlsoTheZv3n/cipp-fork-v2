@@ -76,10 +76,17 @@ async def add_guest(body: dict):
 # --- User Photo ---
 
 @router.get("/ListUserPhoto")
-async def list_user_photo(tenantFilter: str = Query(...), userId: str = Query(...)):
+async def list_user_photo(
+    tenantFilter: str = Query(None),
+    userId: str = Query(None),
+    UserID: str = Query(None),
+):
+    uid = UserID or userId
+    if not uid or not tenantFilter:
+        return {"Results": "No photo found."}
     graph = GraphClient(tenantFilter)
     try:
-        data = await graph.get(f"/users/{userId}/photo/$value")
+        data = await graph.get(f"/users/{uid}/photo/$value")
         return data
     except Exception:
         return {"Results": "No photo found."}

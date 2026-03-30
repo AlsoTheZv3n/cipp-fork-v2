@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.database import get_db
+from app.core.graph import _is_demo_mode
 from app.core.session import (
     clear_session_cookie,
     create_session_token,
@@ -137,6 +138,18 @@ async def auth_callback(
 async def auth_me(request: Request):
     """Return current user session — replaces Azure SWA /.auth/me."""
     user = get_current_user(request)
+
+    # Dev/demo mode: auto-authenticate without cookie
+    if not user and (settings.debug or _is_demo_mode()):
+        return {
+            "clientPrincipal": {
+                "identityProvider": "aad",
+                "userId": "dev-local-admin",
+                "userDetails": "admin@localhost",
+                "userRoles": ["admin", "editor", "readonly"],
+            }
+        }
+
     if not user:
         return {"clientPrincipal": None}
 
@@ -162,6 +175,19 @@ async def logout(post_logout_redirect_uri: str = "/"):
 async def api_me(request: Request):
     """CIPP user info endpoint — returns roles and permissions."""
     user = get_current_user(request)
+
+    # Dev/demo mode: auto-authenticate without cookie
+    if not user and (settings.debug or _is_demo_mode()):
+        return {
+            "clientPrincipal": {
+                "identityProvider": "aad",
+                "userId": "dev-local-admin",
+                "userDetails": "admin@localhost",
+                "userRoles": ["admin", "editor", "readonly"],
+            },
+            "permissions": ["*"],
+        }
+
     if not user:
         return JSONResponse(
             status_code=401,
