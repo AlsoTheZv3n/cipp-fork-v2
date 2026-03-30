@@ -262,7 +262,7 @@ async def list_jit_admin(tenantFilter: str = Query(None)):
 
 @router.get("/ListJITAdminTemplates")
 async def list_jit_admin_templates():
-    return {"Results": []}
+    return []
 
 @router.post("/AddJITAdminTemplate")
 async def add_jit_admin_template(body: dict):

@@ -510,7 +510,8 @@ async def list_available_tests():
 
 @router.get("/ListTestReports")
 async def list_test_reports(db: AsyncSession = Depends(get_db)):
-    return await _list_templates("test_report", db)
+    data = await _list_templates("test_report", db)
+    return data.get("Results", []) if isinstance(data, dict) else data
 
 @router.post("/AddTestReport")
 async def add_test_report(body: dict, db: AsyncSession = Depends(get_db)):
