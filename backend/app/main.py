@@ -32,6 +32,34 @@ app = FastAPI(
     description="FastAPI backend for CIPP — replacing PowerShell Azure Functions with direct Graph API calls.",
 )
 
+
+@app.on_event("startup")
+async def seed_demo_tenant():
+    """In demo mode, seed a demo tenant so the UI has data to show."""
+    from app.core.graph import _is_demo_mode
+    if not _is_demo_mode():
+        return
+    try:
+        from sqlalchemy import select
+        from app.core.database import async_session
+        from app.core.demo_data import DEMO_TENANT_DOMAIN, DEMO_TENANT_ID
+        from app.models.tenant import Tenant
+
+        async with async_session() as session:
+            result = await session.execute(select(Tenant).where(Tenant.tenant_id == DEMO_TENANT_ID))
+            if not result.scalar_one_or_none():
+                session.add(Tenant(
+                    tenant_id=DEMO_TENANT_ID,
+                    display_name="Contoso GmbH (Demo)",
+                    default_domain=DEMO_TENANT_DOMAIN,
+                ))
+                await session.commit()
+                print("[DEMO] Seeded demo tenant: Contoso GmbH")
+            else:
+                print("[DEMO] Demo tenant already exists")
+    except Exception as e:
+        print(f"[DEMO] Could not seed demo tenant (DB unavailable): {e}")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,

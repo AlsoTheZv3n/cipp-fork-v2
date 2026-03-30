@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     # App
     app_name: str = "CIPP Backend"
     debug: bool = False
+    demo_mode: bool = False  # Set to true for fake data without Azure credentials
     cors_origins: list[str] = ["http://localhost:3000"]
     frontend_url: str = "http://localhost:3000"
 

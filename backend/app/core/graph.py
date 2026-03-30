@@ -1,17 +1,30 @@
 import httpx
 
-from app.core.auth import get_token_for_tenant
+from app.core.config import settings
+
+
+def _is_demo_mode() -> bool:
+    """Check if demo mode is active (no Azure credentials configured)."""
+    return settings.demo_mode or not settings.azure_client_id
 
 
 class GraphClient:
-    """Async client for Microsoft Graph API with batch support."""
+    """Async client for Microsoft Graph API with batch support.
+
+    In demo mode (DEMO_MODE=true or no AZURE_CLIENT_ID), returns realistic
+    fake data instead of making real Graph API calls.
+    """
 
     BASE_URL = "https://graph.microsoft.com/v1.0"
 
     def __init__(self, tenant_id: str):
         self.tenant_id = tenant_id
+        self.demo = _is_demo_mode()
 
     async def _headers(self) -> dict[str, str]:
+        if self.demo:
+            return {"Content-Type": "application/json"}
+        from app.core.auth import get_token_for_tenant
         token = await get_token_for_tenant(self.tenant_id)
         return {
             "Authorization": f"Bearer {token}",
@@ -19,6 +32,11 @@ class GraphClient:
         }
 
     async def get(self, endpoint: str, params: dict | None = None) -> dict:
+        if self.demo:
+            from app.core.demo_data import get_demo_response
+            result = get_demo_response(endpoint, params)
+            return result if result is not None else {"value": []}
+
         async with httpx.AsyncClient() as client:
             r = await client.get(
                 f"{self.BASE_URL}{endpoint}",
@@ -29,6 +47,9 @@ class GraphClient:
             return r.json()
 
     async def post(self, endpoint: str, body: dict) -> dict:
+        if self.demo:
+            return {"id": "demo-created", "status": "success", **body}
+
         async with httpx.AsyncClient() as client:
             r = await client.post(
                 f"{self.BASE_URL}{endpoint}",
@@ -39,6 +60,9 @@ class GraphClient:
             return r.json()
 
     async def patch(self, endpoint: str, body: dict) -> dict:
+        if self.demo:
+            return {"id": "demo-updated", "status": "success"}
+
         async with httpx.AsyncClient() as client:
             r = await client.patch(
                 f"{self.BASE_URL}{endpoint}",
@@ -49,6 +73,9 @@ class GraphClient:
             return r.json()
 
     async def delete(self, endpoint: str) -> None:
+        if self.demo:
+            return
+
         async with httpx.AsyncClient() as client:
             r = await client.delete(
                 f"{self.BASE_URL}{endpoint}",
@@ -58,6 +85,15 @@ class GraphClient:
 
     async def batch(self, requests: list[dict]) -> dict:
         """Graph Batch API — up to 20 requests in a single HTTP call."""
+        if self.demo:
+            from app.core.demo_data import get_demo_response
+            responses = []
+            for req in requests:
+                url = req.get("url", "")
+                result = get_demo_response(url)
+                responses.append({"id": req.get("id", "0"), "status": 200, "body": result or {"value": []}})
+            return {"responses": responses}
+
         async with httpx.AsyncClient() as client:
             r = await client.post(
                 f"{self.BASE_URL}/$batch",
@@ -69,15 +105,15 @@ class GraphClient:
 
     async def get_all_pages(self, endpoint: str, params: dict | None = None) -> list:
         """Auto-paginate through @odata.nextLink responses."""
-        results = []
         data = await self.get(endpoint, params)
-        results.extend(data.get("value", []))
+        results = data.get("value", []) if isinstance(data, dict) else []
 
-        while next_link := data.get("@odata.nextLink"):
-            async with httpx.AsyncClient() as client:
-                r = await client.get(next_link, headers=await self._headers())
-                r.raise_for_status()
-                data = r.json()
-                results.extend(data.get("value", []))
+        if not self.demo:
+            while next_link := data.get("@odata.nextLink"):
+                async with httpx.AsyncClient() as client:
+                    r = await client.get(next_link, headers=await self._headers())
+                    r.raise_for_status()
+                    data = r.json()
+                    results.extend(data.get("value", []))
 
         return results
