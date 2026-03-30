@@ -222,7 +222,7 @@ async def list_contact_permissions(
     """Get contact folder permissions — requires PS-Runner."""
     from app.services.ps_runner import run_ps_action
     if not UserId:
-        return {"Results": []}
+        return []
     return await run_ps_action("get_mailbox_permissions", tenantFilter, identity=UserId)
 
 
@@ -249,4 +249,4 @@ async def list_custom_data_mappings(
     directoryObject: str = Query(None),
 ):
     """List custom data mappings."""
-    return {"Results": []}
+    return []

@@ -22,7 +22,7 @@ async def list_safe_links(tenantFilter: str = Query(...)):
 
 @router.get("/ListSafeLinksPolicyTemplates")
 async def list_safe_links_templates():
-    return {"Results": []}
+    return []
 
 @router.post("/AddSafeLinksPolicyFromTemplate")
 async def add_safe_links_from_template(body: dict):
@@ -125,11 +125,11 @@ async def remove_safe_attachments(body: dict):
 
 @router.get("/ListSpamFilterTemplates")
 async def list_spam_filter_templates():
-    return {"Results": []}
+    return []
 
 @router.get("/ListSpamfilterTemplates")
 async def list_spam_filter_templates_lower():
-    return {"Results": []}
+    return []
 
 @router.post("/AddSpamFilter")
 async def add_spam_filter(body: dict):
@@ -166,11 +166,11 @@ async def list_connection_filter(tenantFilter: str = Query(...)):
 
 @router.get("/ListConnectionFilterTemplates")
 async def list_connection_filter_templates():
-    return {"Results": []}
+    return []
 
 @router.get("/ListConnectionfilterTemplates")
 async def list_connection_filter_templates_lower():
-    return {"Results": []}
+    return []
 
 @router.post("/AddConnectionFilter")
 async def add_connection_filter(body: dict):

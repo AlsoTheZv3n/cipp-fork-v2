@@ -14,7 +14,7 @@ router = APIRouter(prefix="/api", tags=["sam-partner"])
 
 async def _list_templates(template_type: str, db: AsyncSession):
     result = await db.execute(select(CippTemplate).where(CippTemplate.type == template_type))
-    return {"Results": [{"id": str(t.id), "name": t.name, "description": t.description, "data": t.data} for t in result.scalars().all()]}
+    return [{"id": str(t.id), "name": t.name, "description": t.description, "data": t.data} for t in result.scalars().all()]
 
 async def _add_template(template_type: str, body: dict, db: AsyncSession):
     t = CippTemplate(type=template_type, name=body.get("name", "Unnamed"), description=body.get("description", ""), data=body.get("data", body))
@@ -201,7 +201,7 @@ async def remove_queued_alert(body: dict, db: AsyncSession = Depends(get_db)):
 
 @router.get("/ListCheckExtAlerts")
 async def list_check_ext_alerts():
-    return {"Results": []}
+    return []
 
 
 # ============================================================
@@ -215,11 +215,11 @@ async def exec_breach_search(body: dict):
 
 @router.get("/ListBreachesAccount")
 async def list_breaches_account(tenantFilter: str = Query(None)):
-    return {"Results": []}
+    return []
 
 @router.get("/ListBreachesTenant")
 async def list_breaches_tenant(tenantFilter: str = Query(None)):
-    return {"Results": []}
+    return []
 
 @router.post("/ExecGeoIPLookup")
 async def exec_geo_ip_lookup(body: dict):
@@ -232,7 +232,7 @@ async def exec_bitlocker_search(body: dict):
     """Search BitLocker recovery keys via Graph."""
     tenant_filter = body.get("tenantFilter")
     if not tenant_filter:
-        return {"Results": []}
+        return []
     graph = GraphClient(tenant_filter)
     data = await graph.get("/informationProtection/bitlocker/recoveryKeys")
     return data.get("value", [])
@@ -253,7 +253,7 @@ async def exec_get_local_admin_password(body: dict):
 
 @router.get("/ExecAppInsightsQuery")
 async def exec_app_insights_query():
-    return {"Results": []}
+    return []
 
 
 # ============================================================
@@ -510,8 +510,7 @@ async def list_available_tests():
 
 @router.get("/ListTestReports")
 async def list_test_reports(db: AsyncSession = Depends(get_db)):
-    data = await _list_templates("test_report", db)
-    return data.get("Results", []) if isinstance(data, dict) else data
+    return await _list_templates("test_report", db)
 
 @router.post("/AddTestReport")
 async def add_test_report(body: dict, db: AsyncSession = Depends(get_db)):
@@ -571,11 +570,11 @@ async def list_graph_explorer_presets(db: AsyncSession = Depends(get_db)):
 
 @router.get("/ListGraphBulkRequest")
 async def list_graph_bulk_request(tenantFilter: str = Query(None)):
-    return {"Results": []}
+    return []
 
 @router.get("/ListEmptyResults")
 async def list_empty_results():
-    return {"Results": []}
+    return []
 
 @router.get("/ListExcludedLicenses")
 async def list_excluded_licenses(db: AsyncSession = Depends(get_db)):
@@ -590,7 +589,7 @@ async def exec_license_search(body: dict):
     """Search licenses across tenants."""
     tenant_filter = body.get("tenantFilter")
     if not tenant_filter:
-        return {"Results": []}
+        return []
     graph = GraphClient(tenant_filter)
     data = await graph.get("/subscribedSkus")
     search = body.get("search", "").lower()
@@ -601,7 +600,7 @@ async def exec_license_search(body: dict):
 
 @router.get("/listCSPLicenses")
 async def list_csp_licenses():
-    return {"Results": []}
+    return []
 
 @router.post("/ExecCSPLicense")
 async def exec_csp_license(body: dict):
@@ -609,7 +608,7 @@ async def exec_csp_license(body: dict):
 
 @router.get("/ListAuditLogSearches")
 async def list_audit_log_searches(tenantFilter: str = Query(None)):
-    return {"Results": []}
+    return []
 
 @router.post("/ExecAuditLogSearch")
 async def exec_audit_log_search(body: dict):
@@ -686,7 +685,7 @@ async def exec_remove_teams_voice_phone(body: dict):
 
 @router.get("/ListTeamsLisLocation")
 async def list_teams_lis_location(tenantFilter: str = Query(None)):
-    return {"Results": []}
+    return []
 
 @router.get("/ListAppApprovalTemplates")
 async def list_app_approval_templates(db: AsyncSession = Depends(get_db)):
@@ -710,7 +709,7 @@ async def exec_github_action(body: dict):
 
 @router.get("/ListExtensionSync")
 async def list_extension_sync():
-    return {"Results": []}
+    return []
 
 @router.post("/ExecExtensionSync")
 async def exec_extension_sync(body: dict):

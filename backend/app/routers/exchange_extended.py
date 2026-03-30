@@ -136,7 +136,7 @@ async def exec_mailbox_restore(body: dict):
 
 @router.get("/ListMailboxRestores")
 async def list_mailbox_restores(tenantFilter: str = Query(...)):
-    return {"Results": []}
+    return []
 
 @router.post("/ExecStartManagedFolderAssistant")
 async def exec_start_managed_folder_assistant(body: dict):
@@ -196,7 +196,7 @@ async def exec_manage_retention_tags(body: dict):
 async def list_mailbox_cas(tenantFilter: str = Query(...), userId: str = Query(None)):
     """List CAS mailbox settings (protocols enabled)."""
     if not userId:
-        return {"Results": []}
+        return []
     return await run_ps_action("get_cas_mailbox", tenantFilter, identity=userId)
 
 @router.get("/ListMailboxForwarding")
@@ -280,7 +280,7 @@ async def edit_room_list(body: dict):
 async def list_calendar_permissions(tenantFilter: str = Query(...), userId: str = Query(None)):
     """List calendar permissions via Graph."""
     if not userId:
-        return {"Results": []}
+        return []
     graph = GraphClient(tenantFilter)
     data = await graph.get(f"/users/{userId}/calendar/calendarPermissions")
     return data.get("value", [])
@@ -312,7 +312,7 @@ async def exec_set_calendar_processing(body: dict):
 async def list_ooo(tenantFilter: str = Query(...), userId: str = Query(None)):
     """Get Out of Office settings via Graph."""
     if not userId:
-        return {"Results": []}
+        return []
     graph = GraphClient(tenantFilter)
     settings = await graph.get(f"/users/{userId}/mailboxSettings")
     return settings.get("automaticRepliesSetting", {})
@@ -370,15 +370,15 @@ async def exec_modify_mb_perms(body: dict):
 async def list_exchange_connectors(tenantFilter: str = Query(...)):
     graph = GraphClient(tenantFilter)
     # Exchange connectors aren't in Graph — need PS-Runner
-    return {"Results": []}
+    return []
 
 @router.get("/ListExConnectorTemplates")
 async def list_ex_connector_templates():
-    return {"Results": []}
+    return []
 
 @router.get("/ListExconnectorTemplates")
 async def list_ex_connector_templates_lower():
-    return {"Results": []}
+    return []
 
 @router.post("/AddExConnector")
 async def add_ex_connector(body: dict):
@@ -421,7 +421,7 @@ async def remove_transport_rule(body: dict):
 
 @router.get("/ListTransportRulesTemplates")
 async def list_transport_rules_templates():
-    return {"Results": []}
+    return []
 
 @router.post("/AddTransportTemplate")
 async def add_transport_template(body: dict):
@@ -447,4 +447,4 @@ async def list_global_address_list(tenantFilter: str = Query(...)):
 
 @router.get("/ListExoRequest")
 async def list_exo_request(tenantFilter: str = Query(...)):
-    return {"Results": []}
+    return []

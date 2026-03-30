@@ -79,7 +79,7 @@ async def list_intune_reusable_settings(tenantFilter: str = Query(...)):
 
 @router.get("/ListIntuneReusableSettingTemplates")
 async def list_intune_reusable_setting_templates():
-    return {"Results": []}
+    return []
 
 @router.post("/AddIntuneReusableSetting")
 async def add_intune_reusable_setting(body: dict):
@@ -508,7 +508,7 @@ async def exec_assignment_filter(body: dict):
 
 @router.get("/ListAssignmentFilterTemplates")
 async def list_assignment_filter_templates():
-    return {"Results": []}
+    return []
 
 @router.post("/AddAssignmentFilterTemplate")
 async def add_assignment_filter_template(body: dict):

@@ -18,7 +18,7 @@ router = APIRouter(prefix="/api", tags=["settings"])
 async def list_extensions_config(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(CippTemplate).where(CippTemplate.type == "extension_config"))
     configs = result.scalars().all()
-    return {"Results": [{"id": str(c.id), "name": c.name, "data": c.data} for c in configs]}
+    return [{"id": str(c.id), "name": c.name, "data": c.data} for c in configs]
 
 @router.post("/ExecExtensionsConfig")
 async def exec_extensions_config(body: dict, db: AsyncSession = Depends(get_db)):
@@ -108,7 +108,7 @@ async def exec_user_bookmarks(body: dict, db: AsyncSession = Depends(get_db)):
 @router.get("/ListCustomRole")
 async def list_custom_roles(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(CippTemplate).where(CippTemplate.type == "custom_role"))
-    return {"Results": [{"id": str(r.id), "name": r.name, "data": r.data} for r in result.scalars().all()]}
+    return [{"id": str(r.id), "name": r.name, "data": r.data} for r in result.scalars().all()]
 
 @router.post("/ExecCustomRole")
 async def exec_custom_role(body: dict, db: AsyncSession = Depends(get_db)):
@@ -125,7 +125,7 @@ async def exec_custom_role(body: dict, db: AsyncSession = Depends(get_db)):
 @router.get("/ListScheduledItems")
 async def list_scheduled_items(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(CippScheduledItem).where(CippScheduledItem.type == "task").order_by(CippScheduledItem.created_at.desc()))
-    return {"Results": [{"id": str(i.id), "name": i.name, "tenantId": i.tenant_id, "schedule": i.schedule, "data": i.data, "isActive": i.is_active} for i in result.scalars().all()]}
+    return [{"id": str(i.id), "name": i.name, "tenantId": i.tenant_id, "schedule": i.schedule, "data": i.data, "isActive": i.is_active} for i in result.scalars().all()]
 
 @router.post("/AddScheduledItem")
 async def add_scheduled_item(body: dict, db: AsyncSession = Depends(get_db)):
@@ -150,7 +150,7 @@ async def remove_scheduled_item(body: dict, db: AsyncSession = Depends(get_db)):
 @router.get("/ListCommunityRepos")
 async def list_community_repos(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(CippTemplate).where(CippTemplate.type == "community_repo"))
-    return {"Results": [{"id": str(r.id), "name": r.name, "data": r.data} for r in result.scalars().all()]}
+    return [{"id": str(r.id), "name": r.name, "data": r.data} for r in result.scalars().all()]
 
 @router.post("/ExecCommunityRepo")
 async def exec_community_repo(body: dict, db: AsyncSession = Depends(get_db)):
@@ -218,7 +218,7 @@ async def list_github_release_notes():
             r = await client.get("https://api.github.com/repos/KelvinTegelaar/CIPP/releases", params={"per_page": 5})
             return [{"name": rel.get("name"), "tag": rel.get("tag_name"), "body": rel.get("body", "")[:500], "date": rel.get("published_at")} for rel in r.json()]
     except Exception:
-        return {"Results": []}
+        return []
 
 
 # ============================================================
@@ -228,7 +228,7 @@ async def list_github_release_notes():
 @router.get("/Listlogs")
 async def list_logs(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(CippLog).order_by(CippLog.created_at.desc()).limit(200))
-    return {"Results": [{"id": str(l.id), "level": l.level, "message": l.message, "tenantId": l.tenant_id, "source": l.source, "createdAt": l.created_at.isoformat()} for l in result.scalars().all()]}
+    return [{"id": str(l.id), "level": l.level, "message": l.message, "tenantId": l.tenant_id, "source": l.source, "createdAt": l.created_at.isoformat()} for l in result.scalars().all()]
 
 
 # ============================================================
@@ -238,7 +238,7 @@ async def list_logs(db: AsyncSession = Depends(get_db)):
 @router.get("/ListDiagnosticsPresets")
 async def list_diagnostics_presets(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(CippTemplate).where(CippTemplate.type == "diagnostics_preset"))
-    return {"Results": [{"id": str(p.id), "name": p.name, "data": p.data} for p in result.scalars().all()]}
+    return [{"id": str(p.id), "name": p.name, "data": p.data} for p in result.scalars().all()]
 
 @router.post("/ExecDiagnosticsPresets")
 async def exec_diagnostics_presets(body: dict):
@@ -253,7 +253,7 @@ async def exec_diagnostics_presets(body: dict):
 async def list_domain_health(tenantFilter: str = Query(None), Domain: str = Query(None)):
     """Domain health check — basic DNS-based analysis."""
     if not Domain:
-        return {"Results": []}
+        return []
     import httpx
     results = {"domain": Domain, "checks": {}}
     # Basic check: resolve the domain
@@ -278,7 +278,7 @@ async def list_domain_health(tenantFilter: str = Query(None), Domain: str = Quer
 
 @router.get("/ListDomainAnalyser")
 async def list_domain_analyser(tenantFilter: str = Query(None)):
-    return {"Results": []}
+    return []
 
 @router.post("/ExecDomainAnalyser")
 async def exec_domain_analyser(body: dict):

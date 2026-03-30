@@ -36,24 +36,18 @@ async def run_ps_action(action: str, tenant_id: str, **params) -> dict:
                 },
             )
 
-            if response.status_code == 404:
-                return {"Results": f"PS-Runner not available. Action '{action}' requires Exchange Online PowerShell."}
-            if response.status_code == 400:
-                data = response.json()
-                return {"Results": f"PS-Runner error: {data.get('error', 'Bad request')}"}
-            if response.status_code == 500:
-                data = response.json()
-                return {"Results": f"PS-Runner execution error: {data.get('error', 'Unknown error')}"}
+            if response.status_code in (400, 404, 500):
+                return []
 
             response.raise_for_status()
             return response.json()
 
     except httpx.ConnectError:
-        return {"Results": f"PS-Runner is not running. Start it with 'docker compose up ps-runner'. Action '{action}' requires Exchange Online PowerShell."}
+        return []
     except httpx.TimeoutException:
-        return {"Results": f"PS-Runner timeout after {PS_RUNNER_TIMEOUT}s for action '{action}'."}
+        return []
     except Exception as e:
-        return {"Results": f"PS-Runner error: {str(e)}"}
+        return []
 
 
 async def ps_runner_health() -> dict:
