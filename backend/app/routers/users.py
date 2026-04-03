@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Query
 
 from app.core.graph import GraphClient
+from app.core.response import cipp_response
 
 router = APIRouter(prefix="/api", tags=["users"])
 
@@ -23,7 +24,7 @@ async def list_users(tenantFilter: str = Query(...), UserId: str = Query(None), 
         except Exception:
             return []
     data = await graph.get("/users", params={"$select": USER_SELECT, "$top": top})
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.get("/ListuserCounts")
@@ -62,7 +63,7 @@ async def list_mfa_users(tenantFilter: str = Query(...)):
     })
     user_list = users.get("value", [])
     if not user_list:
-        return []
+        return cipp_response([])
 
     batch_requests = [
         {"id": str(i), "method": "GET", "url": f"/users/{u['id']}/authentication/methods"}
@@ -89,7 +90,7 @@ async def list_mfa_users(tenantFilter: str = Query(...)):
             "isMfaRegistered": has_mfa,
             "authMethods": method_types,
         })
-    return results
+    return cipp_response(results)
 
 
 @router.post("/AddUser")
@@ -183,7 +184,7 @@ async def list_user_signin_logs(
         "/auditLogs/signIns",
         params={"$filter": f"userId eq '{uid}'", "$top": top},
     )
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.get("/ListUserGroups")
@@ -191,7 +192,7 @@ async def list_user_groups(tenantFilter: str = Query(...), userId: str = Query(.
     """List groups a user is a member of."""
     graph = GraphClient(tenantFilter)
     data = await graph.get(f"/users/{userId}/memberOf")
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.get("/ListUserMailboxDetails")
@@ -216,7 +217,7 @@ async def list_user_mailbox_rules(
     """Get mailbox rules for a user via Graph."""
     graph = GraphClient(tenantFilter)
     data = await graph.get(f"/users/{UserId}/mailFolders/inbox/messageRules")
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.get("/ListContactPermissions")

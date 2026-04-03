@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Query
 
 from app.core.graph import GraphClient
+from app.core.response import cipp_response
 
 router = APIRouter(prefix="/api", tags=["gdap"])
 
@@ -10,7 +11,7 @@ async def list_gdap_roles(tenantFilter: str = Query(None)):
     """List GDAP role definitions."""
     graph = GraphClient(tenantFilter or "")
     data = await graph.get("/directoryRoles")
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.get("/ListGDAPInvite")
@@ -18,7 +19,7 @@ async def list_gdap_invites(tenantFilter: str = Query(None)):
     """List GDAP relationship invites."""
     graph = GraphClient(tenantFilter or "")
     data = await graph.get("/tenantRelationships/delegatedAdminRelationships")
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.post("/ExecGDAPInvite")

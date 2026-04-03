@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Query
 
 from app.core.graph import GraphClient
+from app.core.response import cipp_response
 
 router = APIRouter(prefix="/api", tags=["sharepoint-teams"])
 
@@ -10,7 +11,7 @@ async def list_sites(tenantFilter: str = Query(...)):
     """List SharePoint sites."""
     graph = GraphClient(tenantFilter)
     data = await graph.get("/sites", params={"search": "*"})
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.get("/ListSiteMembers")
@@ -18,7 +19,7 @@ async def list_site_members(tenantFilter: str = Query(...), siteId: str = Query(
     """List SharePoint site members."""
     graph = GraphClient(tenantFilter)
     data = await graph.get(f"/sites/{siteId}/permissions")
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.post("/AddSite")
@@ -46,7 +47,7 @@ async def list_teams_voice(tenantFilter: str = Query(...)):
     """List Teams voice users."""
     graph = GraphClient(tenantFilter)
     data = await graph.get("/communications/callRecords", params={"$top": 50})
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.get("/ListSharepointQuota")

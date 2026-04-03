@@ -2,6 +2,7 @@
 from fastapi import APIRouter, Query
 
 from app.core.graph import GraphClient
+from app.core.response import cipp_response
 
 router = APIRouter(prefix="/api", tags=["intune-extended"])
 
@@ -73,7 +74,7 @@ async def list_intune_reusable_settings(tenantFilter: str = Query(...)):
     graph = GraphClient(tenantFilter)
     try:
         data = await graph.get("/deviceManagement/reusablePolicySettings")
-        return data.get("value", [])
+        return cipp_response(data.get("value", []))
     except Exception:
         return []
 

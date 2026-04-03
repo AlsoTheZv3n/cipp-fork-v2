@@ -2,6 +2,7 @@ from fastapi import APIRouter, Query
 
 from app.core.graph import GraphClient
 from app.services.ps_runner import run_ps_action
+from app.core.response import cipp_response
 
 router = APIRouter(prefix="/api", tags=["mailbox"])
 
@@ -29,7 +30,7 @@ async def list_mailbox_rules(
     """Get mailbox rules via Graph API."""
     graph = GraphClient(tenantFilter)
     data = await graph.get(f"/users/{userId}/mailFolders/inbox/messageRules")
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.get("/ListTransportRules")

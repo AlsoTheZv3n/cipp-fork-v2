@@ -3,6 +3,7 @@ from fastapi import APIRouter, Query
 
 from app.core.graph import GraphClient
 from app.services.ps_runner import run_ps_action
+from app.core.response import cipp_response
 
 router = APIRouter(prefix="/api", tags=["exchange-extended"])
 
@@ -283,7 +284,7 @@ async def list_calendar_permissions(tenantFilter: str = Query(...), userId: str 
         return []
     graph = GraphClient(tenantFilter)
     data = await graph.get(f"/users/{userId}/calendar/calendarPermissions")
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 @router.post("/ExecEditCalendarPermissions")
 async def exec_edit_calendar_permissions(body: dict):

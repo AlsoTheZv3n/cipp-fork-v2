@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.core.graph import GraphClient
 from app.models.template import CippLog, CippScheduledItem, CippTemplate
+from app.core.response import cipp_response
 
 router = APIRouter(prefix="/api", tags=["settings"])
 
@@ -299,7 +300,7 @@ async def list_directory_objects(tenantFilter: str = Query(...), id: str = Query
     if id:
         return await graph.get(f"/directoryObjects/{id}")
     data = await graph.get("/directoryObjects", params={"$top": 100})
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 # ============================================================

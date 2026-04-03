@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.core.graph import GraphClient
 from app.models.tenant import Tenant
+from app.core.response import cipp_response
 
 router = APIRouter(prefix="/api", tags=["tenant-admin"])
 
@@ -186,7 +187,7 @@ async def list_oauth_apps(tenantFilter: str = Query(...)):
         "$select": "id,displayName,appId,appOwnerOrganizationId,publisherName,replyUrls",
         "$top": 999,
     })
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 @router.get("/ListAppConsentRequests")
 async def list_app_consent_requests(tenantFilter: str = Query(...)):
@@ -194,7 +195,7 @@ async def list_app_consent_requests(tenantFilter: str = Query(...)):
     graph = GraphClient(tenantFilter)
     try:
         data = await graph.get("/identityGovernance/appConsent/appConsentRequests")
-        return data.get("value", [])
+        return cipp_response(data.get("value", []))
     except Exception:
         return {"Results": []}
 
@@ -230,7 +231,7 @@ async def exec_service_principals(body: dict):
         return {"Results": "tenantFilter required."}
     graph = GraphClient(tenant_filter)
     data = await graph.get("/servicePrincipals", params={"$top": 999})
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 # --- Branding ---

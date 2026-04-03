@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Query
 
 from app.core.graph import GraphClient
+from app.core.response import cipp_response
 
 router = APIRouter(prefix="/api", tags=["contacts"])
 
@@ -12,7 +13,7 @@ async def list_contacts(tenantFilter: str = Query(...), id: str = Query(None)):
     if id:
         return await graph.get(f"/contacts/{id}")
     data = await graph.get("/contacts")
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.post("/AddContact")
@@ -57,7 +58,7 @@ async def list_equipment(tenantFilter: str = Query(...)):
     """List equipment mailboxes (via Graph groups/resources)."""
     graph = GraphClient(tenantFilter)
     data = await graph.get("/places/microsoft.graph.room")
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.get("/ListRooms")
@@ -65,7 +66,7 @@ async def list_rooms(tenantFilter: str = Query(...)):
     """List room resources."""
     graph = GraphClient(tenantFilter)
     data = await graph.get("/places/microsoft.graph.room")
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.get("/ListRoomLists")
@@ -73,4 +74,4 @@ async def list_room_lists(tenantFilter: str = Query(...)):
     """List room lists."""
     graph = GraphClient(tenantFilter)
     data = await graph.get("/places/microsoft.graph.roomList")
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))

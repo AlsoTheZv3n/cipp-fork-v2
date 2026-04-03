@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.core.graph import GraphClient
 from app.models.template import CippLog, CippScheduledItem, CippTemplate
+from app.core.response import cipp_response
 
 router = APIRouter(prefix="/api", tags=["sam-partner"])
 
@@ -235,7 +236,7 @@ async def exec_bitlocker_search(body: dict):
         return []
     graph = GraphClient(tenant_filter)
     data = await graph.get("/informationProtection/bitlocker/recoveryKeys")
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 @router.post("/ExecGetLocalAdminPassword")
 async def exec_get_local_admin_password(body: dict):
@@ -705,7 +706,7 @@ async def exec_audit_log_search(body: dict):
     if body.get("filter"):
         params["$filter"] = body["filter"]
     data = await graph.get("/auditLogs/directoryAudits", params=params)
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 @router.post("/ExecDriftClone")
 async def exec_drift_clone(body: dict):

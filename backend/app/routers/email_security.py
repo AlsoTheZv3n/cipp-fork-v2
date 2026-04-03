@@ -8,6 +8,7 @@ from fastapi import APIRouter, Query
 
 from app.core.graph import GraphClient
 from app.services.ps_runner import run_ps_action
+from app.core.response import cipp_response
 
 router = APIRouter(prefix="/api", tags=["email-security"])
 
@@ -257,7 +258,7 @@ async def list_defender_tvm(tenantFilter: str = Query(...)):
             "$filter": "serviceSource eq 'microsoftDefenderForEndpoint'",
             "$top": 50,
         })
-        return data.get("value", [])
+        return cipp_response(data.get("value", []))
     except Exception:
         return []
 
@@ -272,7 +273,7 @@ async def exec_mdo_alerts_list(tenantFilter: str = Query(...)):
         "$filter": "serviceSource eq 'microsoftDefenderForOffice365'",
         "$top": 50, "$orderby": "createdDateTime desc",
     })
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 @router.post("/ExecSetMdoAlert")
 async def exec_set_mdo_alert(body: dict):

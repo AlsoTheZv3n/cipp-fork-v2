@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Query
 
 from app.core.graph import GraphClient
+from app.core.response import cipp_response
 
 router = APIRouter(prefix="/api", tags=["groups"])
 
@@ -15,7 +16,7 @@ async def list_groups(tenantFilter: str = Query(...), top: int = 999):
     """List all groups in a tenant."""
     graph = GraphClient(tenantFilter)
     data = await graph.get("/groups", params={"$select": GROUP_SELECT, "$top": top})
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.post("/AddGroup")

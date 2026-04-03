@@ -2,6 +2,7 @@
 from fastapi import APIRouter, Query
 
 from app.core.graph import GraphClient
+from app.core.response import cipp_response
 
 router = APIRouter(prefix="/api", tags=["security"])
 
@@ -19,7 +20,7 @@ async def list_ca_policies(tenantFilter: str = Query(...)):
     # Enrich with state summary
     for p in policies:
         p["_stateLabel"] = {"enabled": "On", "disabled": "Off", "enabledForReportingButNotEnforced": "Report-only"}.get(p.get("state"), p.get("state"))
-    return policies
+    return cipp_response(policies)
 
 
 @router.post("/AddCAPolicy")
@@ -62,7 +63,7 @@ async def remove_ca_policy(body: dict):
 async def list_named_locations(tenantFilter: str = Query(...)):
     graph = GraphClient(tenantFilter)
     data = await graph.get("/identity/conditionalAccess/namedLocations")
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 # ============================================================
@@ -77,7 +78,7 @@ async def list_alerts(tenantFilter: str = Query(...), top: int = 50):
         "$top": top,
         "$orderby": "createdDateTime desc",
     })
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.get("/ExecIncidentsList")
@@ -88,7 +89,7 @@ async def list_incidents(tenantFilter: str = Query(...), top: int = 50):
         "$top": top,
         "$orderby": "createdDateTime desc",
     })
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.post("/ExecSetSecurityAlert")
@@ -156,7 +157,7 @@ async def list_secure_score_profiles(tenantFilter: str = Query(...)):
     """Get secure score improvement actions."""
     graph = GraphClient(tenantFilter)
     data = await graph.get("/security/secureScoreControlProfiles")
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 # ============================================================
@@ -225,7 +226,7 @@ async def list_risky_signins(tenantFilter: str = Query(...), top: int = 100):
         "$top": top,
         "$orderby": "activityDateTime desc",
     })
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.get("/security/riskyServicePrincipals")
@@ -234,7 +235,7 @@ async def list_risky_service_principals(tenantFilter: str = Query(...)):
     graph = GraphClient(tenantFilter)
     try:
         data = await graph.get("/identityProtection/riskyServicePrincipals")
-        return data.get("value", [])
+        return cipp_response(data.get("value", []))
     except Exception:
         return []
 
@@ -255,7 +256,7 @@ async def list_sign_ins(
     if filter:
         params["$filter"] = filter
     data = await graph.get("/auditLogs/signIns", params=params)
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.get("/ListAuditLogs")
@@ -270,7 +271,7 @@ async def list_audit_logs(
     if filter:
         params["$filter"] = filter
     data = await graph.get("/auditLogs/directoryAudits", params=params)
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.get("/security/signInSummary")
@@ -344,7 +345,7 @@ async def list_roles(tenantFilter: str = Query(...)):
         except Exception:
             pass
 
-    return roles
+    return cipp_response(roles)
 
 
 @router.get("/security/roleMembers/{role_id}")
@@ -352,7 +353,7 @@ async def get_role_members(tenantFilter: str = Query(...), role_id: str = ""):
     """Get members of a specific directory role."""
     graph = GraphClient(tenantFilter)
     data = await graph.get(f"/directoryRoles/{role_id}/members")
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 # ============================================================
@@ -365,7 +366,7 @@ async def list_threat_intelligence(tenantFilter: str = Query(...)):
     graph = GraphClient(tenantFilter)
     try:
         data = await graph.get("/security/tiIndicators", params={"$top": 50})
-        return data.get("value", [])
+        return cipp_response(data.get("value", []))
     except Exception:
         return []
 
@@ -388,6 +389,6 @@ async def get_auth_methods_activity(tenantFilter: str = Query(...)):
     graph = GraphClient(tenantFilter)
     try:
         data = await graph.get("/reports/authenticationMethods/userRegistrationDetails")
-        return data.get("value", [])
+        return cipp_response(data.get("value", []))
     except Exception:
         return []

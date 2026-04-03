@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.core.graph import GraphClient
 from app.models.tenant import Tenant
+from app.core.response import cipp_response
 
 router = APIRouter(prefix="/api", tags=["tenants"])
 
@@ -40,7 +41,7 @@ async def list_domains(tenantFilter: str = Query(...)):
     """Get tenant domains."""
     graph = GraphClient(tenantFilter)
     data = await graph.get("/domains")
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.get("/listTenantDetails")

@@ -3,6 +3,7 @@ from fastapi import APIRouter, Query
 
 from app.core.graph import GraphClient
 from app.services.ps_runner import run_ps_action
+from app.core.response import cipp_response
 
 router = APIRouter(prefix="/api", tags=["user-extended"])
 
@@ -11,7 +12,7 @@ router = APIRouter(prefix="/api", tags=["user-extended"])
 async def list_users_lower(tenantFilter: str = Query(...)):
     graph = GraphClient(tenantFilter)
     data = await graph.get("/users", params={"$select": "id,displayName,userPrincipalName", "$top": 999})
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 @router.get("/ListUsersAndGroups")
 async def list_users_and_groups(tenantFilter: str = Query(...)):
@@ -256,7 +257,7 @@ async def list_jit_admin(tenantFilter: str = Query(None)):
     # PIM (Privileged Identity Management) eligible role assignments
     try:
         data = await graph.get("/roleManagement/directory/roleEligibilityScheduleInstances")
-        return data.get("value", [])
+        return cipp_response(data.get("value", []))
     except Exception:
         return {"Results": []}
 

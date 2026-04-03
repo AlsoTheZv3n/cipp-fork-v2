@@ -7,6 +7,7 @@ from app.core.database import get_db
 from app.core.graph import GraphClient
 from app.models.standard import BPATemplate, StandardResult, StandardTemplate
 from app.services.standards_engine import AVAILABLE_CHECKS, run_checks
+from app.core.response import cipp_response
 
 router = APIRouter(prefix="/api", tags=["standards"])
 
@@ -310,7 +311,7 @@ async def list_deleted_items(tenantFilter: str = Query(...)):
     """List recently deleted directory objects."""
     graph = GraphClient(tenantFilter)
     data = await graph.get("/directory/deletedItems/microsoft.graph.user", params={"$top": 100})
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 @router.post("/ExecRestoreDeleted")
 async def exec_restore_deleted(body: dict):

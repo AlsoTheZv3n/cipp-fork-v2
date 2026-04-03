@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Query
 
 from app.core.graph import GraphClient
+from app.core.response import cipp_response
 
 router = APIRouter(prefix="/api", tags=["intune"])
 
@@ -10,7 +11,7 @@ async def list_devices(tenantFilter: str = Query(...), top: int = 999):
     """List managed devices."""
     graph = GraphClient(tenantFilter)
     data = await graph.get("/deviceManagement/managedDevices", params={"$top": top})
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.post("/ExecDeviceAction")
@@ -59,7 +60,7 @@ async def list_compliance_policies(tenantFilter: str = Query(...)):
     """List device compliance policies."""
     graph = GraphClient(tenantFilter)
     data = await graph.get("/deviceManagement/deviceCompliancePolicies")
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.get("/ListApps")
@@ -67,7 +68,7 @@ async def list_apps(tenantFilter: str = Query(...)):
     """List Intune managed apps."""
     graph = GraphClient(tenantFilter)
     data = await graph.get("/deviceAppManagement/mobileApps")
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.get("/ListAPDevices")
@@ -75,7 +76,7 @@ async def list_autopilot_devices(tenantFilter: str = Query(...)):
     """List Windows Autopilot devices."""
     graph = GraphClient(tenantFilter)
     data = await graph.get("/deviceManagement/windowsAutopilotDeviceIdentities")
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.get("/ListIntuneTemplates")
@@ -83,7 +84,7 @@ async def list_intune_templates(tenantFilter: str = Query(...)):
     """List Intune configuration templates."""
     graph = GraphClient(tenantFilter)
     data = await graph.get("/deviceManagement/deviceConfigurations")
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.get("/ListIntuneScript")
@@ -91,7 +92,7 @@ async def list_intune_scripts(tenantFilter: str = Query(...)):
     """List Intune PowerShell scripts."""
     graph = GraphClient(tenantFilter)
     data = await graph.get("/deviceManagement/deviceManagementScripts")
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.get("/ListAssignmentFilters")
@@ -99,7 +100,7 @@ async def list_assignment_filters(tenantFilter: str = Query(...)):
     """List Intune assignment filters."""
     graph = GraphClient(tenantFilter)
     data = await graph.get("/deviceManagement/assignmentFilters")
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.get("/ListAppProtectionPolicies")
@@ -107,7 +108,7 @@ async def list_app_protection_policies(tenantFilter: str = Query(...)):
     """List app protection policies."""
     graph = GraphClient(tenantFilter)
     data = await graph.get("/deviceAppManagement/managedAppPolicies")
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.post("/ExecAssignPolicy")

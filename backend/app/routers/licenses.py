@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Query
 
 from app.core.graph import GraphClient
+from app.core.response import cipp_response
 
 router = APIRouter(prefix="/api", tags=["licenses"])
 
@@ -10,7 +11,7 @@ async def list_licenses(tenantFilter: str = Query(...)):
     """List all subscribed SKUs for a tenant."""
     graph = GraphClient(tenantFilter)
     data = await graph.get("/subscribedSkus")
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.get("/ListCSPsku")
@@ -18,7 +19,7 @@ async def list_csp_sku(tenantFilter: str = Query(...)):
     """List CSP SKUs (same as subscribed SKUs)."""
     graph = GraphClient(tenantFilter)
     data = await graph.get("/subscribedSkus")
-    return data.get("value", [])
+    return cipp_response(data.get("value", []))
 
 
 @router.post("/ExecBulkLicense")
