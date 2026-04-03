@@ -27,9 +27,12 @@ async def list_tenants(db: AsyncSession = Depends(get_db)):
 
 @router.get("/ListOrg")
 async def list_org(tenantFilter: str = Query(...)):
-    """Get tenant organization details."""
+    """Get tenant organization details — frontend accesses data.displayName directly."""
     graph = GraphClient(tenantFilter)
-    return await graph.get("/organization")
+    data = await graph.get("/organization")
+    # Frontend expects the org object directly, not wrapped in {value: [...]}
+    orgs = data.get("value", [])
+    return orgs[0] if orgs else {}
 
 
 @router.get("/ListDomains")

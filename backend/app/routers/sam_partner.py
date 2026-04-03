@@ -500,13 +500,97 @@ async def exec_gdap_remove_ga_role(body: dict):
 # ============================================================
 
 @router.get("/ListTests")
-async def list_tests():
-    from app.services.standards_engine import AVAILABLE_CHECKS
-    return [{"name": n, "label": c["label"], "category": c["category"]} for n, c in AVAILABLE_CHECKS.items()]
+async def list_tests(tenantFilter: str = Query(None), reportId: str = Query(None)):
+    """Dashboard V2 aggregation endpoint — returns tenant counts, test results, secure score, MFA state."""
+    if not tenantFilter:
+        from app.services.standards_engine import AVAILABLE_CHECKS
+        return [{"name": n, "label": c["label"], "category": c["category"]} for n, c in AVAILABLE_CHECKS.items()]
+
+    graph = GraphClient(tenantFilter)
+    result = {}
+
+    # Tenant counts
+    try:
+        users = await graph.get("/users/$count", params={"ConsistencyLevel": "eventual"})
+        user_count = users if isinstance(users, int) else 0
+    except Exception:
+        try:
+            users_data = await graph.get("/users", params={"$top": 1, "$count": "true", "ConsistencyLevel": "eventual"})
+            user_count = users_data.get("@odata.count", len(users_data.get("value", [])))
+        except Exception:
+            user_count = 0
+
+    try:
+        groups_data = await graph.get("/groups", params={"$top": 1, "$count": "true", "ConsistencyLevel": "eventual"})
+        group_count = groups_data.get("@odata.count", len(groups_data.get("value", [])))
+    except Exception:
+        group_count = 0
+
+    try:
+        devices_data = await graph.get("/deviceManagement/managedDevices", params={"$top": 1})
+        device_count = len(devices_data.get("value", []))
+    except Exception:
+        device_count = 0
+
+    try:
+        sp_data = await graph.get("/servicePrincipals", params={"$top": 1, "$count": "true", "ConsistencyLevel": "eventual"})
+        sp_count = sp_data.get("@odata.count", len(sp_data.get("value", [])))
+    except Exception:
+        sp_count = 0
+
+    try:
+        guests = await graph.get("/users", params={"$filter": "userType eq 'Guest'", "$count": "true", "$top": 1, "ConsistencyLevel": "eventual"})
+        guest_count = guests.get("@odata.count", len(guests.get("value", [])))
+    except Exception:
+        guest_count = 0
+
+    result["TenantCounts"] = {
+        "Users": user_count,
+        "Guests": guest_count,
+        "Groups": group_count,
+        "Devices": device_count,
+        "ManagedDevices": device_count,
+        "ServicePrincipals": sp_count,
+    }
+
+    # Test counts (from standards engine)
+    try:
+        from app.services.standards_engine import run_checks
+        checks = await run_checks(tenantFilter)
+        identity_checks = [c for c in checks if c.get("category") == "Identity"]
+        device_checks = [c for c in checks if c.get("category") not in ("Identity", "Licensing")]
+        result["TestCounts"] = {
+            "Identity": {"Passed": sum(1 for c in identity_checks if c.get("passed")), "Total": len(identity_checks)},
+            "Devices": {"Passed": sum(1 for c in device_checks if c.get("passed")), "Total": len(device_checks)},
+        }
+        result["TestResults"] = checks
+    except Exception:
+        result["TestCounts"] = {"Identity": {"Passed": 0, "Total": 0}, "Devices": {"Passed": 0, "Total": 0}}
+        result["TestResults"] = []
+
+    # Secure score
+    try:
+        score_data = await graph.get("/security/secureScores", params={"$top": 1})
+        scores = score_data.get("value", [])
+        if scores:
+            score = scores[0]
+            result["SecureScore"] = {"currentScore": score.get("currentScore", 0), "maxScore": score.get("maxScore", 0)}
+        else:
+            result["SecureScore"] = {"currentScore": 0, "maxScore": 0}
+    except Exception:
+        result["SecureScore"] = {"currentScore": 0, "maxScore": 0}
+
+    # MFA state placeholder
+    result["MFAState"] = {}
+    result["LicenseData"] = {}
+    result["LatestReportTimeStamp"] = None
+
+    return result
 
 @router.get("/ListAvailableTests")
 async def list_available_tests():
-    return await list_tests()
+    from app.services.standards_engine import AVAILABLE_CHECKS
+    return [{"name": n, "label": c["label"], "category": c["category"]} for n, c in AVAILABLE_CHECKS.items()]
 
 @router.get("/ListTestReports")
 async def list_test_reports(db: AsyncSession = Depends(get_db)):

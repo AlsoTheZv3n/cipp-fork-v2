@@ -38,12 +38,17 @@ async def list_user_counts(tenantFilter: str = Query(...)):
     disabled = total - enabled
     guests = sum(1 for u in users if u.get("userType") == "Guest")
     licensed = sum(1 for u in users if u.get("assignedLicenses"))
+    members = total - guests
+    admins = 0  # Would need role check
+    # Frontend expects: data.Users, data.LicUsers, data.Guests, data.Gas
     return {
-        "Total": total,
+        "Users": total,
+        "LicUsers": licensed,
+        "Guests": guests,
+        "Gas": admins,
         "Enabled": enabled,
         "Disabled": disabled,
-        "Guests": guests,
-        "Licensed": licensed,
+        "Members": members,
     }
 
 

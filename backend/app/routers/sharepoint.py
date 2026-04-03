@@ -51,11 +51,16 @@ async def list_teams_voice(tenantFilter: str = Query(...)):
 
 @router.get("/ListSharepointQuota")
 async def list_sharepoint_quota(tenantFilter: str = Query(...)):
-    """Get SharePoint storage quota info."""
+    """Get SharePoint storage quota info — frontend expects TenantStorageMB, GeoUsedStorageMB."""
     graph = GraphClient(tenantFilter)
-    # Root site gives tenant-level storage info
-    data = await graph.get("/sites/root")
-    return data
+    try:
+        data = await graph.get("/sites/root")
+        quota = data.get("quota", {})
+        total_mb = round(quota.get("total", 0) / 1024 / 1024)
+        used_mb = round(quota.get("used", 0) / 1024 / 1024)
+        return {"TenantStorageMB": total_mb, "GeoUsedStorageMB": used_mb}
+    except Exception:
+        return {"TenantStorageMB": 0, "GeoUsedStorageMB": 0}
 
 
 @router.post("/ExecSharePointPerms")
