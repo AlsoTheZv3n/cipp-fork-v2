@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const isDev = process.env.NODE_ENV !== "production";
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8055";
+const apiUrl = "http://127.0.0.1:8055";
 
 const config = {
   reactStrictMode: false,
@@ -18,11 +18,12 @@ const config = {
   async redirects() {
     return [];
   },
-  // Proxy /.auth/* and /version.json to the backend in dev mode
+  // Proxy ALL API and auth calls to the backend in dev mode
   async rewrites() {
     if (!isDev) return [];
     return [
       { source: "/.auth/:path*", destination: `${apiUrl}/.auth/:path*` },
+      { source: "/api/:path*", destination: `${apiUrl}/api/:path*` },
       { source: "/version.json", destination: `${apiUrl}/version.json` },
     ];
   },

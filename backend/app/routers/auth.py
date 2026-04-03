@@ -139,8 +139,8 @@ async def auth_me(request: Request):
     """Return current user session — replaces Azure SWA /.auth/me."""
     user = get_current_user(request)
 
-    # Dev/demo mode: auto-authenticate without cookie
-    if not user and (settings.debug or _is_demo_mode()):
+    # Demo mode only: auto-authenticate without cookie (not debug mode with real credentials)
+    if not user and _is_demo_mode():
         return {
             "clientPrincipal": {
                 "identityProvider": "aad",
@@ -176,8 +176,8 @@ async def api_me(request: Request):
     """CIPP user info endpoint — returns roles and permissions."""
     user = get_current_user(request)
 
-    # Dev/demo mode: auto-authenticate without cookie
-    if not user and (settings.debug or _is_demo_mode()):
+    # Demo mode only: auto-authenticate without cookie
+    if not user and _is_demo_mode():
         return {
             "clientPrincipal": {
                 "identityProvider": "aad",
