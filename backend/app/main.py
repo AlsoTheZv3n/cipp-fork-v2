@@ -98,27 +98,36 @@ _DIRECT_ENDPOINTS = {
 
 class CippResultsWrapperMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
-        response = await call_next(request)
+        try:
+            response = await call_next(request)
+        except Exception:
+            raise
+
         path = request.url.path
         method = request.method
 
-        # Only wrap GET requests to /api/* that are not in the exclusion list
+        # Only wrap successful GET requests to /api/*
         if method != "GET" or path in _DIRECT_ENDPOINTS:
             return response
         if not path.startswith("/api/"):
             return response
-        # Skip if path has security/ prefix (custom endpoints)
         if "/security/" in path:
+            return response
+        # Don't wrap error responses
+        if response.status_code >= 400:
             return response
 
         # Read the response body
-        body_chunks = []
-        async for chunk in response.body_iterator:
-            if isinstance(chunk, bytes):
-                body_chunks.append(chunk)
-            else:
-                body_chunks.append(chunk.encode())
-        body = b"".join(body_chunks)
+        try:
+            body_chunks = []
+            async for chunk in response.body_iterator:
+                if isinstance(chunk, bytes):
+                    body_chunks.append(chunk)
+                else:
+                    body_chunks.append(chunk.encode())
+            body = b"".join(body_chunks)
+        except Exception:
+            return response
 
         # Try to parse as JSON
         try:
