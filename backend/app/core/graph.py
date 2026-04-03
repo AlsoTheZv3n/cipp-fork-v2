@@ -44,7 +44,26 @@ class GraphClient:
                 params=params,
             )
             if r.status_code >= 400:
-                return {"value": []}
+                # Parse error details from Graph API response
+                try:
+                    err = r.json()
+                    error_msg = err.get("error", {}).get("message", f"HTTP {r.status_code}")
+                    error_code = err.get("error", {}).get("code", "Unknown")
+                except Exception:
+                    error_msg = f"HTTP {r.status_code}"
+                    error_code = "Unknown"
+                # Log the error (fire-and-forget)
+                try:
+                    from app.core.logging import log_error
+                    import asyncio
+                    asyncio.ensure_future(log_error(
+                        f"Graph {r.status_code}: {error_code} - {error_msg}",
+                        tenant_id=self.tenant_id,
+                        source=f"graph.get {endpoint}",
+                    ))
+                except Exception:
+                    pass
+                return {"value": [], "_error": error_msg, "_errorCode": error_code, "_statusCode": r.status_code}
             return r.json()
 
     async def get_page(self, endpoint: str, params: dict | None = None) -> tuple[list, str | None]:

@@ -6,6 +6,7 @@ All commands are executed via predefined action handlers (no raw command executi
 import httpx
 
 from app.core.config import settings
+from app.core.response import cipp_response
 
 # Timeout: Exchange cmdlets can be slow (especially Get-Mailbox -ResultSize Unlimited)
 PS_RUNNER_TIMEOUT = 60.0
@@ -15,13 +16,7 @@ PS_RUNNER_CONNECT_TIMEOUT = 10.0
 async def run_ps_action(action: str, tenant_id: str, **params) -> dict:
     """Execute a predefined PowerShell action via the PS-Runner sidecar.
 
-    Args:
-        action: The action name (e.g., "get_mailbox", "set_mailbox")
-        tenant_id: The customer tenant ID to connect to
-        **params: Action-specific parameters (e.g., identity="user@domain.com")
-
-    Returns:
-        dict with Results key containing the action output
+    Returns cipp_response() format: {Results: [...]} or {Results: [], Metadata: {error: ...}}
     """
     try:
         async with httpx.AsyncClient(
@@ -36,18 +31,37 @@ async def run_ps_action(action: str, tenant_id: str, **params) -> dict:
                 },
             )
 
-            if response.status_code in (400, 404, 500):
-                return []
+            if response.status_code == 404:
+                return cipp_response([], error=f"PS-Runner not available. Action '{action}' requires Exchange Online PowerShell.")
+            if response.status_code == 400:
+                try:
+                    err = response.json()
+                    return cipp_response([], error=f"PS-Runner: {err.get('error', 'Bad request')}")
+                except Exception:
+                    return cipp_response([], error="PS-Runner: Bad request")
+            if response.status_code == 500:
+                try:
+                    err = response.json()
+                    return cipp_response([], error=f"PS-Runner: {err.get('error', 'Internal error')}")
+                except Exception:
+                    return cipp_response([], error="PS-Runner: Internal error")
 
             response.raise_for_status()
-            return response.json()
+            data = response.json()
+            # PS-Runner returns {Results: ...} — pass through
+            if isinstance(data, dict) and "Results" in data:
+                return data
+            # If it returns a list, wrap it
+            if isinstance(data, list):
+                return cipp_response(data)
+            return cipp_response([data] if data else [])
 
     except httpx.ConnectError:
-        return []
+        return cipp_response([], error="PS-Runner is not running. Start with: docker compose up ps-runner")
     except httpx.TimeoutException:
-        return []
+        return cipp_response([], error=f"PS-Runner timeout ({PS_RUNNER_TIMEOUT}s) for action '{action}'")
     except Exception as e:
-        return []
+        return cipp_response([], error=str(e)[:200])
 
 
 async def ps_runner_health() -> dict:
