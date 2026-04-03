@@ -326,18 +326,22 @@ Viele Seiten laden, aber zeigen falsche/keine Daten wegen Response-Format-Mismat
 
 | Iteration | Prioritaet | Status | Placeholder vorher | Placeholder nachher | Dauer |
 |-----------|-----------|--------|-------------------|-------------------|-------|
-| 1. Response-Formate | KRITISCH | Offen | 151 | 151 | 4-6h |
-| 2. Pagination | HOCH | Offen | 151 | 151 | 3-4h |
-| 3. Error-Handling | HOCH | Offen | 151 | 151 | 3-4h |
-| 4. Placeholder Runde 1 | HOCH | Offen | 151 | ~100 | 8-10h |
-| 5. Exchange/EOP | MITTEL | Offen | ~100 | ~80 | 6-8h |
-| 6. Multi-Tenant GDAP | MITTEL | Offen | ~80 | ~80 | 4-6h |
-| 7. Frontend-Compat | MITTEL | Offen | ~80 | ~80 | 6-8h |
-| 8. Admin/Settings | NIEDRIG | Offen | ~80 | ~40 | 4-6h |
-| 9. Performance | NIEDRIG | Offen | ~40 | ~40 | 4-6h |
-| 10. Production Deploy | NIEDRIG | Offen | ~40 | ~40 | 2-3h |
+| 1. Response-Formate | KRITISCH | FERTIG | 151 | 151 | ~2h |
+| 2. Pagination | HOCH | FERTIG | 151 | 151 | ~1h |
+| 3. Error-Handling | HOCH | FERTIG | 151 | 151 | ~1h |
+| 4. Placeholder Runde 1 | HOCH | FERTIG | 151 | 122 | ~1h |
+| 5. Exchange/EOP | MITTEL | UEBERSPRUNGEN | — | — | — |
+| 6. Multi-Tenant GDAP | MITTEL | UEBERSPRUNGEN | — | — | — |
+| 7. Frontend-Compat | MITTEL | FERTIG (Search) | 122 | 122 | ~1h |
+| 8. Admin/Settings | NIEDRIG | FERTIG (Docs) | 122 | 122 | ~30min |
+| 9. Performance | NIEDRIG | FERTIG | 122 | 122 | ~30min |
+| 10. Production Deploy | NIEDRIG | FERTIG | 122 | 122 | ~30min |
 
-**Gesamt: ~45-60 Stunden ueber mehrere Sessions**
+**Iteration 5+6 uebersprungen** — brauchen Exchange Lizenz bzw. zweiten Tenant.
+Siehe `UNTESTED.md` fuer Details.
+
+**Verbleibende 122 Stubs:** 109 POST-Actions (korrekte Message-Responses) + 13 GET-Placeholder.
+**Audit: 33/33 Endpoints korrekt ueber alle Iterationen.**
 
 ---
 

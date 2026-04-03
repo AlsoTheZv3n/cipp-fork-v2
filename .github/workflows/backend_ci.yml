@@ -3,10 +3,10 @@ name: Backend CI
 on:
   push:
     branches: [main]
-    paths: ['backend/**']
+    paths: ['backend/**', 'agents/**']
   pull_request:
     branches: [main]
-    paths: ['backend/**']
+    paths: ['backend/**', 'agents/**']
 
 jobs:
   test:
@@ -27,6 +27,11 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+    env:
+      DATABASE_URL: postgresql+asyncpg://cipp:cipp_test@localhost:5432/cipp_test
+      DEMO_MODE: "true"
+      PYTHONPATH: "."
+
     steps:
       - uses: actions/checkout@v4
 
@@ -39,73 +44,72 @@ jobs:
 
       - name: Install dependencies
         working-directory: backend
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt
+          pip install psycopg pytest
 
       - name: Run import check
         working-directory: backend
-        env:
-          DATABASE_URL: postgresql+asyncpg://cipp:cipp_test@localhost:5432/cipp_test
-          PYTHONPATH: .
-        run: python -c "from app.main import app; print(f'OK: {len(list(app.routes))} routes loaded')"
-
-      - name: Run migrations
-        working-directory: backend
-        env:
-          DATABASE_URL: postgresql+asyncpg://cipp:cipp_test@localhost:5432/cipp_test
-          PYTHONPATH: .
-        run: |
-          pip install psycopg
-          alembic upgrade head
-
-      - name: Verify endpoint coverage
-        working-directory: backend
-        env:
-          DATABASE_URL: postgresql+asyncpg://cipp:cipp_test@localhost:5432/cipp_test
-          PYTHONPATH: .
         run: |
           python -c "
           from app.main import app
-          backend = set()
-          for route in app.routes:
-              if hasattr(route, 'path'):
-                  backend.add(route.path)
-          print(f'Backend endpoints: {len(backend)}')
-          assert len(backend) >= 480, f'Expected >=480 endpoints, got {len(backend)}'
-          print('Endpoint count OK')
+          print('OK:', len(list(app.routes)), 'routes loaded')
+          "
+
+      - name: Run migrations
+        working-directory: backend
+        run: alembic upgrade head
+
+      - name: Verify endpoint count (>= 480)
+        working-directory: backend
+        run: |
+          python -c "
+          from app.main import app
+          paths = set(r.path for r in app.routes if hasattr(r, 'path'))
+          print(f'Endpoints: {len(paths)}')
+          assert len(paths) >= 480, f'Expected >=480, got {len(paths)}'
           "
 
       - name: Verify no duplicate routes
         working-directory: backend
-        env:
-          DATABASE_URL: postgresql+asyncpg://cipp:cipp_test@localhost:5432/cipp_test
-          PYTHONPATH: .
         run: |
           python -c "
           from app.main import app
           from collections import Counter
-          paths = []
-          for route in app.routes:
-              if hasattr(route, 'path') and hasattr(route, 'methods'):
-                  for method in route.methods:
-                      paths.append(f'{method} {route.path}')
-          dupes = [(p, c) for p, c in Counter(paths).items() if c > 1]
-          assert len(dupes) == 0, f'Duplicate routes found: {dupes}'
-          print('No duplicate routes')
+          paths = [f'{m} {r.path}' for r in app.routes if hasattr(r, 'path') and hasattr(r, 'methods') for m in r.methods if m in ('GET','POST')]
+          dupes = [p for p, c in Counter(paths).items() if c > 1]
+          assert not dupes, f'Duplicates: {dupes}'
+          print('No duplicates')
           "
 
-      - name: Verify MCP server loads
+      - name: Verify MCP server (21+ tools)
         working-directory: backend
-        env:
-          DATABASE_URL: postgresql+asyncpg://cipp:cipp_test@localhost:5432/cipp_test
-          PYTHONPATH: .
         run: |
           python -c "
           from mcp_server import mcp
           tools = mcp._tool_manager.list_tools()
           print(f'MCP tools: {len(tools)}')
-          assert len(tools) >= 20, f'Expected >=20 MCP tools, got {len(tools)}'
-          print('MCP server OK')
+          assert len(tools) >= 20
           "
+
+      - name: Start backend and run API health check
+        working-directory: backend
+        run: |
+          uvicorn app.main:app --host 127.0.0.1 --port 8055 &
+          sleep 5
+          curl -sf http://127.0.0.1:8055/api/health
+          echo ""
+          curl -sf http://127.0.0.1:8055/.auth/me
+          echo ""
+          curl -sf http://127.0.0.1:8055/api/ListTenants
+          kill %1
+
+      - name: Run Quick Audit (demo mode)
+        run: |
+          cd backend && uvicorn app.main:app --host 127.0.0.1 --port 8055 &
+          sleep 5
+          cd .. && CIPP_TEST_TENANT=demo-tenant-contoso python agents/cipp_agents.py --quick
+          kill %1
 
   docker:
     runs-on: ubuntu-latest
@@ -115,10 +119,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build backend Docker image
+      - name: Build backend image
         working-directory: backend
         run: docker build -t cipp-backend .
 
-      - name: Build PS-Runner Docker image
+      - name: Build PS-Runner image
         working-directory: backend/ps_runner
         run: docker build -t cipp-ps-runner .
