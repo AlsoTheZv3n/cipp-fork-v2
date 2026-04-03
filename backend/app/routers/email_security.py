@@ -10,6 +10,12 @@ from app.core.graph import GraphClient
 from app.services.ps_runner import run_ps_action
 from app.core.response import cipp_response
 
+from fastapi import Depends
+from sqlalchemy import select, delete as sa_delete
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.database import get_db
+from app.models.template import CippTemplate
+
 router = APIRouter(prefix="/api", tags=["email-security"])
 
 
@@ -23,7 +29,7 @@ async def list_safe_links(tenantFilter: str = Query(...)):
 
 @router.get("/ListSafeLinksPolicyTemplates")
 async def list_safe_links_templates():
-    return []
+    return cipp_response([])
 
 @router.post("/AddSafeLinksPolicyFromTemplate")
 async def add_safe_links_from_template(body: dict):
@@ -126,11 +132,11 @@ async def remove_safe_attachments(body: dict):
 
 @router.get("/ListSpamFilterTemplates")
 async def list_spam_filter_templates():
-    return []
+    return cipp_response([])
 
 @router.get("/ListSpamfilterTemplates")
 async def list_spam_filter_templates_lower():
-    return []
+    return cipp_response([])
 
 @router.post("/AddSpamFilter")
 async def add_spam_filter(body: dict):
@@ -167,11 +173,11 @@ async def list_connection_filter(tenantFilter: str = Query(...)):
 
 @router.get("/ListConnectionFilterTemplates")
 async def list_connection_filter_templates():
-    return []
+    return cipp_response([])
 
 @router.get("/ListConnectionfilterTemplates")
 async def list_connection_filter_templates_lower():
-    return []
+    return cipp_response([])
 
 @router.post("/AddConnectionFilter")
 async def add_connection_filter(body: dict):
@@ -260,7 +266,7 @@ async def list_defender_tvm(tenantFilter: str = Query(...)):
         })
         return cipp_response(data.get("value", []))
     except Exception:
-        return []
+        return cipp_response([])
 
 @router.post("/AddDefenderDeployment")
 async def add_defender_deployment(body: dict):

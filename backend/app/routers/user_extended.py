@@ -5,6 +5,12 @@ from app.core.graph import GraphClient
 from app.services.ps_runner import run_ps_action
 from app.core.response import cipp_response
 
+from fastapi import Depends
+from sqlalchemy import select, delete as sa_delete
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.database import get_db
+from app.models.template import CippTemplate
+
 router = APIRouter(prefix="/api", tags=["user-extended"])
 
 
@@ -263,7 +269,7 @@ async def list_jit_admin(tenantFilter: str = Query(None)):
 
 @router.get("/ListJITAdminTemplates")
 async def list_jit_admin_templates():
-    return []
+    return cipp_response([])
 
 @router.post("/AddJITAdminTemplate")
 async def add_jit_admin_template(body: dict):

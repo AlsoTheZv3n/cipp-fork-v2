@@ -202,7 +202,7 @@ async def remove_queued_alert(body: dict, db: AsyncSession = Depends(get_db)):
 
 @router.get("/ListCheckExtAlerts")
 async def list_check_ext_alerts():
-    return []
+    return cipp_response([])
 
 
 # ============================================================
@@ -216,11 +216,11 @@ async def exec_breach_search(body: dict):
 
 @router.get("/ListBreachesAccount")
 async def list_breaches_account(tenantFilter: str = Query(None)):
-    return []
+    return cipp_response([])
 
 @router.get("/ListBreachesTenant")
 async def list_breaches_tenant(tenantFilter: str = Query(None)):
-    return []
+    return cipp_response([])
 
 @router.post("/ExecGeoIPLookup")
 async def exec_geo_ip_lookup(body: dict):
@@ -254,7 +254,7 @@ async def exec_get_local_admin_password(body: dict):
 
 @router.get("/ExecAppInsightsQuery")
 async def exec_app_insights_query():
-    return []
+    return cipp_response([])
 
 
 # ============================================================
@@ -655,11 +655,11 @@ async def list_graph_explorer_presets(db: AsyncSession = Depends(get_db)):
 
 @router.get("/ListGraphBulkRequest")
 async def list_graph_bulk_request(tenantFilter: str = Query(None)):
-    return []
+    return cipp_response([])
 
 @router.get("/ListEmptyResults")
 async def list_empty_results():
-    return []
+    return cipp_response([])
 
 @router.get("/ListExcludedLicenses")
 async def list_excluded_licenses(db: AsyncSession = Depends(get_db)):
@@ -685,7 +685,7 @@ async def exec_license_search(body: dict):
 
 @router.get("/listCSPLicenses")
 async def list_csp_licenses():
-    return []
+    return cipp_response([])
 
 @router.post("/ExecCSPLicense")
 async def exec_csp_license(body: dict):
@@ -693,7 +693,7 @@ async def exec_csp_license(body: dict):
 
 @router.get("/ListAuditLogSearches")
 async def list_audit_log_searches(tenantFilter: str = Query(None)):
-    return []
+    return cipp_response([])
 
 @router.post("/ExecAuditLogSearch")
 async def exec_audit_log_search(body: dict):
@@ -770,7 +770,7 @@ async def exec_remove_teams_voice_phone(body: dict):
 
 @router.get("/ListTeamsLisLocation")
 async def list_teams_lis_location(tenantFilter: str = Query(None)):
-    return []
+    return cipp_response([])
 
 @router.get("/ListAppApprovalTemplates")
 async def list_app_approval_templates(db: AsyncSession = Depends(get_db)):
@@ -798,7 +798,7 @@ async def exec_github_action(body: dict):
 
 @router.get("/ListExtensionSync")
 async def list_extension_sync():
-    return []
+    return cipp_response([])
 
 @router.post("/ExecExtensionSync")
 async def exec_extension_sync(body: dict):

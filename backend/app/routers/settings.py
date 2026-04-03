@@ -223,7 +223,7 @@ async def list_github_release_notes():
             r = await client.get("https://api.github.com/repos/KelvinTegelaar/CIPP/releases", params={"per_page": 5})
             return [{"name": rel.get("name"), "tag": rel.get("tag_name"), "body": rel.get("body", "")[:500], "date": rel.get("published_at")} for rel in r.json()]
     except Exception:
-        return []
+        return cipp_response([])
 
 
 # ============================================================
@@ -258,7 +258,7 @@ async def exec_diagnostics_presets(body: dict):
 async def list_domain_health(tenantFilter: str = Query(None), Domain: str = Query(None)):
     """Domain health check — basic DNS-based analysis."""
     if not Domain:
-        return []
+        return cipp_response([])
     import httpx
     results = {"domain": Domain, "checks": {}}
     # Basic check: resolve the domain
@@ -283,7 +283,7 @@ async def list_domain_health(tenantFilter: str = Query(None), Domain: str = Quer
 
 @router.get("/ListDomainAnalyser")
 async def list_domain_analyser(tenantFilter: str = Query(None)):
-    return []
+    return cipp_response([])
 
 @router.post("/ExecDomainAnalyser")
 async def exec_domain_analyser(body: dict):

@@ -237,7 +237,7 @@ async def list_risky_service_principals(tenantFilter: str = Query(...)):
         data = await graph.get("/identityProtection/riskyServicePrincipals")
         return cipp_response(data.get("value", []))
     except Exception:
-        return []
+        return cipp_response([])
 
 
 # ============================================================
@@ -368,7 +368,7 @@ async def list_threat_intelligence(tenantFilter: str = Query(...)):
         data = await graph.get("/security/tiIndicators", params={"$top": 50})
         return cipp_response(data.get("value", []))
     except Exception:
-        return []
+        return cipp_response([])
 
 
 # ============================================================
@@ -391,4 +391,4 @@ async def get_auth_methods_activity(tenantFilter: str = Query(...)):
         data = await graph.get("/reports/authenticationMethods/userRegistrationDetails")
         return cipp_response(data.get("value", []))
     except Exception:
-        return []
+        return cipp_response([])

@@ -22,7 +22,7 @@ async def list_users(tenantFilter: str = Query(...), UserId: str = Query(None), 
             user = await graph.get(f"/users/{UserId}", params={"$select": USER_SELECT})
             return [user]
         except Exception:
-            return []
+            return cipp_response([])
     items, next_link = await graph.get_page("/users", params={"$select": USER_SELECT, "$top": top})
     return cipp_response(items, next_link=next_link)
 
@@ -178,7 +178,7 @@ async def list_user_signin_logs(
     """Get sign-in logs for a specific user."""
     uid = UserId or userId
     if not uid:
-        return []
+        return cipp_response([])
     graph = GraphClient(tenantFilter)
     data = await graph.get(
         "/auditLogs/signIns",
@@ -228,7 +228,7 @@ async def list_contact_permissions(
     """Get contact folder permissions — requires PS-Runner."""
     from app.services.ps_runner import run_ps_action
     if not UserId:
-        return []
+        return cipp_response([])
     return await run_ps_action("get_mailbox_permissions", tenantFilter, identity=UserId)
 
 
@@ -255,4 +255,4 @@ async def list_custom_data_mappings(
     directoryObject: str = Query(None),
 ):
     """List custom data mappings."""
-    return []
+    return cipp_response([])

@@ -4,6 +4,12 @@ from fastapi import APIRouter, Query
 from app.core.graph import GraphClient
 from app.core.response import cipp_response
 
+from fastapi import Depends
+from sqlalchemy import select, delete as sa_delete
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.database import get_db
+from app.models.template import CippTemplate
+
 router = APIRouter(prefix="/api", tags=["intune-extended"])
 
 
@@ -76,11 +82,11 @@ async def list_intune_reusable_settings(tenantFilter: str = Query(...)):
         data = await graph.get("/deviceManagement/reusablePolicySettings")
         return cipp_response(data.get("value", []))
     except Exception:
-        return []
+        return cipp_response([])
 
 @router.get("/ListIntuneReusableSettingTemplates")
 async def list_intune_reusable_setting_templates():
-    return []
+    return cipp_response([])
 
 @router.post("/AddIntuneReusableSetting")
 async def add_intune_reusable_setting(body: dict):
@@ -509,7 +515,7 @@ async def exec_assignment_filter(body: dict):
 
 @router.get("/ListAssignmentFilterTemplates")
 async def list_assignment_filter_templates():
-    return []
+    return cipp_response([])
 
 @router.post("/AddAssignmentFilterTemplate")
 async def add_assignment_filter_template(body: dict):

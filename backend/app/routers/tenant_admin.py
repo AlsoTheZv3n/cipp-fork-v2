@@ -101,7 +101,7 @@ async def edit_tenant_offboarding_defaults(body: dict):
 
 @router.get("/ListTenantGroups")
 async def list_tenant_groups():
-    return []
+    return []  # Direct array for dropdown
 
 @router.post("/ExecTenantGroup")
 async def exec_tenant_group(body: dict):
