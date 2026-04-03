@@ -27,6 +27,8 @@ export const hasPermission = (userPermissions, requiredPermissions) => {
   }
 
   return userPermissions.some((userPerm) => {
+    // Wildcard "*" grants all permissions
+    if (userPerm === "*") return true;
     return requiredPermissions.some((requiredPerm) => {
       // Exact match
       if (userPerm === requiredPerm) {

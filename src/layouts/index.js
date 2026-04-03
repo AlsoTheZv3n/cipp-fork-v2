@@ -141,6 +141,8 @@ export const Layout = (props) => {
             // Check permission with pattern matching support
             if (item.permissions && item.permissions.length > 0) {
               const hasPermission = userPermissions?.some((userPerm) => {
+                // Wildcard "*" grants all permissions
+                if (userPerm === "*") return true;
                 return item.permissions.some((requiredPerm) => {
                   // Exact match
                   if (userPerm === requiredPerm) {

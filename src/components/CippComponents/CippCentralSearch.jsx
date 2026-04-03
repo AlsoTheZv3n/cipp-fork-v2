@@ -91,6 +91,8 @@ function filterItemsByPermissionsAndRoles(items, userPermissions, userRoles) {
     // Check permissions with pattern matching support
     if (item.permissions && item.permissions.length > 0) {
       const hasPermission = userPermissions?.some((userPerm) => {
+        // Wildcard "*" grants all permissions
+        if (userPerm === "*") return true;
         return item.permissions.some((requiredPerm) => {
           // Exact match
           if (userPerm === requiredPerm) {
