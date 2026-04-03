@@ -783,6 +783,10 @@ async def exec_app_approval_template(body: dict, db: AsyncSession = Depends(get_
 async def exec_app_permission_template(body: dict, db: AsyncSession = Depends(get_db)):
     return await _add_template("app_permission", body, db)
 
+@router.get("/ExecAppPermissionTemplate")
+async def get_app_permission_template(tenantFilter: str = Query(None), db: AsyncSession = Depends(get_db)):
+    return await _list_templates("app_permission", db)
+
 @router.post("/ExecCreateAppTemplate")
 async def exec_create_app_template(body: dict, db: AsyncSession = Depends(get_db)):
     return await _add_template("app", body, db)

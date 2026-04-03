@@ -8,8 +8,9 @@ router = APIRouter(prefix="/api", tags=["graph"])
 @router.get("/ListGraphRequest")
 async def list_graph_request(
     request: Request,
-    tenantFilter: str = Query(...),
     Endpoint: str = Query(...),
+    tenantFilter: str = Query(None),
+    TenantFilter: str = Query(None),
     NoPagination: bool = Query(False),
     noPagination: bool = Query(False),
 ):
@@ -18,12 +19,15 @@ async def list_graph_request(
     Forwards all extra query params ($select, $filter, $top, $count, etc.) to Graph API.
     Returns {Results: [...]} for paginated, or raw data for NoPagination.
     """
-    graph = GraphClient(tenantFilter)
+    tenant = tenantFilter or TenantFilter
+    if not tenant:
+        return {"Results": [], "Metadata": {"error": "tenantFilter is required"}}
+    graph = GraphClient(tenant)
     no_page = NoPagination or noPagination
 
     # Collect Graph query params (everything except our known params)
-    our_params = {"tenantFilter", "Endpoint", "NoPagination", "noPagination", "type",
-                  "ReverseTenantLookup", "manualPagination"}
+    our_params = {"tenantFilter", "TenantFilter", "Endpoint", "NoPagination", "noPagination", "type",
+                  "ReverseTenantLookup", "manualPagination", "IgnoreErrors", "ListProperties"}
     graph_params = {k: v for k, v in request.query_params.items() if k not in our_params}
 
     # Ensure endpoint starts with /
