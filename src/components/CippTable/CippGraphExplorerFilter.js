@@ -136,7 +136,7 @@ const CippGraphExplorerFilter = ({
           type: "Built-In",
         });
       });
-    if (presetList.isSuccess && presetList.data?.Results.length > 0) {
+    if (presetList.isSuccess && presetList.data?.Results?.length > 0) {
       presetList.data.Results.forEach((item) => {
         presetOptionList.push({
           label: item.name,
