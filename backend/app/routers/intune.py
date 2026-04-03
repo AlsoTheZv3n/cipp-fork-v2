@@ -10,8 +10,8 @@ router = APIRouter(prefix="/api", tags=["intune"])
 async def list_devices(tenantFilter: str = Query(...), top: int = 999):
     """List managed devices."""
     graph = GraphClient(tenantFilter)
-    data = await graph.get("/deviceManagement/managedDevices", params={"$top": top})
-    return cipp_response(data.get("value", []))
+    items, next_link = await graph.get_page("/deviceManagement/managedDevices", params={"$top": top})
+    return cipp_response(items, next_link=next_link)
 
 
 @router.post("/ExecDeviceAction")

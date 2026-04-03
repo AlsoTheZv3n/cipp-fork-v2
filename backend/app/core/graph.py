@@ -44,9 +44,33 @@ class GraphClient:
                 params=params,
             )
             if r.status_code >= 400:
-                # Return empty result instead of crashing
                 return {"value": []}
             return r.json()
+
+    async def get_page(self, endpoint: str, params: dict | None = None) -> tuple[list, str | None]:
+        """Get a single page of results. Returns (items, next_link).
+
+        Use this instead of get() when you need pagination support.
+        The next_link can be passed to cipp_response() for Metadata.nextLink.
+        """
+        data = await self.get(endpoint, params)
+        items = data.get("value", []) if isinstance(data, dict) else []
+        next_link = data.get("@odata.nextLink") if isinstance(data, dict) else None
+        return items, next_link
+
+    async def get_next_page(self, next_link_url: str) -> tuple[list, str | None]:
+        """Follow a nextLink URL to get the next page of results."""
+        if self.demo:
+            return [], None
+
+        async with httpx.AsyncClient() as client:
+            r = await client.get(next_link_url, headers=await self._headers())
+            if r.status_code >= 400:
+                return [], None
+            data = r.json()
+            items = data.get("value", []) if isinstance(data, dict) else []
+            next_link = data.get("@odata.nextLink") if isinstance(data, dict) else None
+            return items, next_link
 
     async def post(self, endpoint: str, body: dict) -> dict:
         if self.demo:
@@ -106,7 +130,7 @@ class GraphClient:
             return r.json()
 
     async def get_all_pages(self, endpoint: str, params: dict | None = None) -> list:
-        """Auto-paginate through @odata.nextLink responses."""
+        """Auto-paginate through @odata.nextLink responses. Returns all items."""
         data = await self.get(endpoint, params)
         results = data.get("value", []) if isinstance(data, dict) else []
 
@@ -114,7 +138,8 @@ class GraphClient:
             while next_link := data.get("@odata.nextLink"):
                 async with httpx.AsyncClient() as client:
                     r = await client.get(next_link, headers=await self._headers())
-                    r.raise_for_status()
+                    if r.status_code >= 400:
+                        break
                     data = r.json()
                     results.extend(data.get("value", []))
 

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Query, Request
 
 from app.core.graph import GraphClient
+from app.core.response import cipp_response
 
 router = APIRouter(prefix="/api", tags=["graph"])
 
@@ -13,11 +14,14 @@ async def list_graph_request(
     TenantFilter: str = Query(None),
     NoPagination: bool = Query(False),
     noPagination: bool = Query(False),
+    nextLink: str = Query(None),
 ):
-    """Generic Graph API proxy — the most-used CIPP endpoint (~79 calls in frontend).
+    """Generic Graph API proxy with pagination support.
 
-    Forwards all extra query params ($select, $filter, $top, $count, etc.) to Graph API.
-    Returns {Results: [...]} for paginated, or raw data for NoPagination.
+    The most-used CIPP endpoint (~79 calls in frontend).
+    Forwards $select, $filter, $top, $count etc. to Graph API.
+    Returns {Results: [...], Metadata: {nextLink: "..."}} for paginated responses.
+    Frontend uses ApiGetCallWithPagination which passes nextLink for next page.
     """
     tenant = tenantFilter or TenantFilter
     if not tenant:
@@ -26,38 +30,35 @@ async def list_graph_request(
     no_page = NoPagination or noPagination
 
     # Collect Graph query params (everything except our known params)
-    our_params = {"tenantFilter", "TenantFilter", "Endpoint", "NoPagination", "noPagination", "type",
-                  "ReverseTenantLookup", "manualPagination", "IgnoreErrors", "ListProperties"}
+    our_params = {"tenantFilter", "TenantFilter", "Endpoint", "NoPagination", "noPagination",
+                  "type", "ReverseTenantLookup", "manualPagination", "IgnoreErrors",
+                  "ListProperties", "nextLink"}
     graph_params = {k: v for k, v in request.query_params.items() if k not in our_params}
 
     # Ensure endpoint starts with /
     endpoint = Endpoint if Endpoint.startswith("/") else f"/{Endpoint}"
 
     try:
+        # If nextLink is provided, follow it for the next page
+        if nextLink:
+            items, next_next_link = await graph.get_next_page(nextLink)
+            return cipp_response(items, next_link=next_next_link)
+
         if no_page:
             data = await graph.get(endpoint, params=graph_params or None)
             return data
         else:
-            if graph_params:
-                data = await graph.get(endpoint, params=graph_params)
-                results = data.get("value", []) if isinstance(data, dict) else data
-                next_link = data.get("@odata.nextLink") if isinstance(data, dict) else None
-                resp = {"Results": results}
-                if next_link:
-                    resp["Metadata"] = {"nextLink": next_link}
-                return resp
-            else:
-                results = await graph.get_all_pages(endpoint)
-                return {"Results": results}
+            # Single page with pagination metadata
+            items, next_link_url = await graph.get_page(endpoint, params=graph_params or None)
+            return cipp_response(items, next_link=next_link_url)
     except Exception as e:
         error_msg = str(e)
-        # Extract HTTP status from httpx error
         if "403" in error_msg:
-            return {"Results": [], "Metadata": {"error": "Insufficient permissions for this Graph API endpoint."}}
+            return cipp_response([], next_link=None)
         elif "404" in error_msg:
-            return {"Results": [], "Metadata": {"error": "Graph API endpoint not found."}}
+            return cipp_response([], next_link=None)
         else:
-            return {"Results": [], "Metadata": {"error": error_msg[:200]}}
+            return cipp_response([], next_link=None)
 
 
 @router.post("/ListGraphRequest")
@@ -76,10 +77,8 @@ async def post_graph_request(body: dict):
 
     try:
         if method == "GET":
-            params = body.get("params", {})
-            data = await graph.get(endpoint, params=params)
-            results = data.get("value", []) if isinstance(data, dict) else data
-            return {"Results": results}
+            items, next_link = await graph.get_page(endpoint, params=body.get("params"))
+            return cipp_response(items, next_link=next_link)
         elif method == "POST":
             request_body = body.get("body", {})
             return await graph.post(endpoint, request_body)
@@ -92,4 +91,4 @@ async def post_graph_request(body: dict):
         else:
             return {"Results": f"Unsupported method: {method}"}
     except Exception as e:
-        return {"Results": [], "Metadata": {"error": str(e)[:200]}}
+        return cipp_response([], next_link=None)

@@ -23,8 +23,8 @@ async def list_users(tenantFilter: str = Query(...), UserId: str = Query(None), 
             return [user]
         except Exception:
             return []
-    data = await graph.get("/users", params={"$select": USER_SELECT, "$top": top})
-    return cipp_response(data.get("value", []))
+    items, next_link = await graph.get_page("/users", params={"$select": USER_SELECT, "$top": top})
+    return cipp_response(items, next_link=next_link)
 
 
 @router.get("/ListuserCounts")

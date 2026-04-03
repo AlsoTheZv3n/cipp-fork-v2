@@ -15,8 +15,8 @@ GROUP_SELECT = (
 async def list_groups(tenantFilter: str = Query(...), top: int = 999):
     """List all groups in a tenant."""
     graph = GraphClient(tenantFilter)
-    data = await graph.get("/groups", params={"$select": GROUP_SELECT, "$top": top})
-    return cipp_response(data.get("value", []))
+    items, next_link = await graph.get_page("/groups", params={"$select": GROUP_SELECT, "$top": top})
+    return cipp_response(items, next_link=next_link)
 
 
 @router.post("/AddGroup")
