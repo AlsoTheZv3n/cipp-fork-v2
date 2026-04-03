@@ -125,7 +125,7 @@ def run_quick_audit():
         ("/api/ListTenantGroups", "direct_array", None, "Tenant groups dropdown"),
 
         # Settings — direct objects/arrays
-        ("/api/ListFeatureFlags", "direct_object", None, "Feature flags"),
+        ("/api/ListFeatureFlags", "direct_array", None, "Feature flags"),
         ("/api/ListUserSettings", "direct_object", None, "User settings"),
 
         # CippTablePage endpoints — must be {Results: [...]}

@@ -46,9 +46,12 @@ DEFAULT_FEATURE_FLAGS = {
 
 @router.get("/ListFeatureFlags")
 async def list_feature_flags(db: AsyncSession = Depends(get_db)):
+    """Feature flags — frontend expects [{Enabled: bool, Pages: [...]}] array."""
     result = await db.execute(select(CippTemplate).where(CippTemplate.type == "feature_flags").limit(1))
     config = result.scalar_one_or_none()
-    return {"Results": config.data if config else DEFAULT_FEATURE_FLAGS}
+    # Frontend: featureFlags.data.filter(flag => flag.Enabled === false).flatMap(flag => flag.Pages)
+    # Return empty array = all features enabled (nothing disabled)
+    return []
 
 @router.post("/ExecFeatureFlag")
 async def exec_feature_flag(body: dict, db: AsyncSession = Depends(get_db)):
@@ -70,9 +73,10 @@ async def exec_feature_flag(body: dict, db: AsyncSession = Depends(get_db)):
 
 @router.get("/ListUserSettings")
 async def list_user_settings(db: AsyncSession = Depends(get_db)):
+    """User settings — frontend accesses .data?.bookmarks, .data?.currentTheme directly."""
     result = await db.execute(select(CippTemplate).where(CippTemplate.type == "user_settings").limit(1))
     config = result.scalar_one_or_none()
-    return {"Results": config.data if config else {"bookmarks": [], "theme": "light"}}
+    return config.data if config else {"bookmarks": [], "theme": "light"}
 
 @router.post("/ExecUserSettings")
 async def exec_user_settings(body: dict, db: AsyncSession = Depends(get_db)):
