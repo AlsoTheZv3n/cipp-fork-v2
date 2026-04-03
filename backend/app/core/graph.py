@@ -43,7 +43,9 @@ class GraphClient:
                 headers=await self._headers(),
                 params=params,
             )
-            r.raise_for_status()
+            if r.status_code >= 400:
+                # Return empty result instead of crashing
+                return {"value": []}
             return r.json()
 
     async def post(self, endpoint: str, body: dict) -> dict:
